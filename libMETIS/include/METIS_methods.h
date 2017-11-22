@@ -7,7 +7,7 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graph_traits.hpp>
 
-#include "config.h"
+#include <config.h>
 
 class METIS {
   const Config &config;

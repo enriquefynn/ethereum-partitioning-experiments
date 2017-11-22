@@ -1,6 +1,6 @@
 
-#include "METIS_methods.h"
-#include "config.h"
+#include <METIS_methods.h>
+#include <config.h>
 #include <cassert>
 #include <metis.h>
 

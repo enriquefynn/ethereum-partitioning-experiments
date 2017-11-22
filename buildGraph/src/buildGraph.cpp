@@ -11,9 +11,10 @@
 
 #include <metis.h>
 
-#include "METIS_methods.h"
-#include "config.h"
-#include "utils.h"
+//#include "/Users/fynn/GIT/GeoGraph/Blockchain-partitioning/graphBuilder/partitioner/libMETIS/include/METIS_methods.h"
+#include <METIS_methods.h>
+#include <config.h>
+#include <utils.h>
 
 using namespace std;
 
