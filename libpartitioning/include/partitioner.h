@@ -18,7 +18,7 @@ public:
   virtual bool trigger_partitioning(uint32_t new_timestamp,
                                     bool last_edge_cross_partition) = 0;
 
-  void assign_partition_same(std::vector<int32_t> &partitioning,
+  void assign_partition(std::vector<int32_t> &partitioning,
                              uint32_t from_vertex, uint32_t to_vertex,
                              int32_t nparts);
   uint32_t

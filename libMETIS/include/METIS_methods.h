@@ -21,15 +21,8 @@ public:
   METIS(idx_t seed, const Graph &graph, const Config &config);
   std::vector<idx_t> partition(idx_t nparts);
 
-  void assign_partition_hash(std::vector<idx_t> &partitioning, uint32_t vertex,
-                             idx_t nparts);
-
   bool trigger_partitioning(uint32_t new_timestamp,
                             bool last_edge_cross_partition);
-
-  // Edges cut, vertices in each partitioning partitioning.size()
-  std::tuple<uint32_t, std::vector<uint32_t>>
-  calculate_edge_cut(const Graph &g, const std::vector<idx_t> &partitioning);
 
   METIS &operator=(const METIS &) = delete;
   METIS(const METIS &) = delete;

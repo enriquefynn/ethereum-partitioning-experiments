@@ -5,20 +5,6 @@
 #include <config.h>
 #include <partitioner.h>
 
-#define ASSERT(left, operator, right)                                                              \
-  {                                                                                                \
-    if (!((left) operator(right))) {                                                               \
-      std::cerr                                                                                    \
-          << "ASSERT FAILED: " << #left                                                            \
-          << #                                                                                     \
-             operator<< #right << " @ " << __FILE__ << " (" << __LINE__ << ")"                     \
-                                                                           "."                     \
-                                                                           " " << #left << "=" <<( \
-                                                                               left)               \
-          << "; " << #right << "=" << (right) << std::endl;                                        \
-    }                                                                                              \
-  }
-
 METIS::METIS(idx_t seed, const Graph &graph, const Config &config)
     : Partitioner(seed, graph, config) {
   assert(seed > 0);

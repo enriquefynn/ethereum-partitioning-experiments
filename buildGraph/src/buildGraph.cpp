@@ -12,8 +12,9 @@
 #include <metis.h>
 
 #include <METIS_methods.h>
-#include <config.h>
 #include <fbpartitioning.h>
+#include <hash_partitioning.h>
+#include <config.h>
 #include <utils.h>
 
 using namespace std;
@@ -28,9 +29,16 @@ void add_edge_or_update_weigth(int from, int to, int weight, Graph &g) {
 int main(int argc, char **argv) {
   Graph g;
   Config config("./config.conf");
-  METIS METIS_Graph(METIS_SEED, g, config);
   Partitioner *partitioner;
+#if USE_METIS
+  METIS METIS_Graph(METIS_SEED, g, config);
   partitioner = &METIS_Graph;
+#else
+  Hash_partitioner hash_partitioner(g, config);
+  partitioner = &hash_partitioner;
+
+#endif
+
 
   ifstream calls_file(argv[1]);
   ofstream stats_file(
@@ -67,19 +75,14 @@ int main(int argc, char **argv) {
     case 'G':
       to_vertex = stoi(tokens[1]);
       add_edge_or_update_weigth(0, to_vertex, 1, g);
-#if USE_METIS
-      partitioner->assign_partition_same(partitioning, 0, to_vertex,
+      partitioner->assign_partition(partitioning, 0, to_vertex,
                                          N_PARTITIONS);
-#else
-      Utils::assign_hash_parititon(partitioning, 0, to_vertex, N_PARTITIONS);
-#endif
       continue;
 
     case 'B':
       new_timestamp = stoi(tokens[2]);
       if (!timestamp_log)
         timestamp_log = new_timestamp;
-#if USE_METIS
       if (partitioner->trigger_partitioning(new_timestamp,
                                             last_edge_cross_partition)) {
         // Partition the graph with METIS
@@ -104,7 +107,6 @@ int main(int argc, char **argv) {
           stats_file << balance[i] << ' ';
         stats_file << endl;
       }
-#endif
       assert(new_timestamp >= timestamp_log);
       if (new_timestamp - timestamp_log > TIME_GAP_LOG) {
         assert(total_edge_access >= cross_edge_access);
@@ -146,13 +148,8 @@ int main(int argc, char **argv) {
 
           // ADD edge
           add_edge_or_update_weigth(from_vertex, to_vertex, weight, g);
-#if USE_METIS
-          partitioner->assign_partition_same(partitioning, from_vertex,
-                                            to_vertex, N_PARTITIONS);
-#else
-          Utils::assign_hash_parititon(partitioning, from_vertex, to_vertex,
-                                       N_PARTITIONS);
-#endif
+          partitioner->assign_partition(partitioning, from_vertex,
+                                             to_vertex, N_PARTITIONS);
           ++total_edge_access;
           if (partitioning[from_vertex] != partitioning[to_vertex]) {
             ++cross_edge_access;

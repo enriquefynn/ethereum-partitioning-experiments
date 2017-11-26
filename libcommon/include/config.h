@@ -8,8 +8,8 @@ typedef boost::adjacency_list<boost::hash_setS, boost::vecS, boost::undirectedS,
                               boost::hash_setS>
     Graph;
 
-typedef boost::graph_traits<Graph>::vertex_iterator vertex_it;
 typedef boost::graph_traits<Graph> GraphTraits;
+typedef boost::graph_traits<Graph>::vertex_iterator vertex_it;
 typedef Graph::edge_descriptor Edge;
 typedef GraphTraits::out_edge_iterator out_edge_it;
 

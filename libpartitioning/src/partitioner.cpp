@@ -1,6 +1,6 @@
 #include <partitioner.h>
 
-void Partitioner::assign_partition_same(std::vector<int32_t> &partitioning,
+void Partitioner::assign_partition(std::vector<int32_t> &partitioning,
                                         uint32_t from_vertex,
                                         uint32_t to_vertex, int32_t nparts) {
   // NO partition for from_vertex
