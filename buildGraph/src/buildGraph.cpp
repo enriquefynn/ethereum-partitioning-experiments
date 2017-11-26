@@ -11,9 +11,9 @@
 
 #include <metis.h>
 
-//#include "/Users/fynn/GIT/GeoGraph/Blockchain-partitioning/graphBuilder/partitioner/libMETIS/include/METIS_methods.h"
 #include <METIS_methods.h>
 #include <config.h>
+#include <fbpartitioning.h>
 #include <utils.h>
 
 using namespace std;
@@ -28,7 +28,9 @@ void add_edge_or_update_weigth(int from, int to, int weight, Graph &g) {
 int main(int argc, char **argv) {
   Graph g;
   Config config("./config.conf");
-  METIS METIS_Graph(METIS_SEED, config);
+  METIS METIS_Graph(METIS_SEED, g, config);
+  Partitioner *partitioner;
+  partitioner = &METIS_Graph;
 
   ifstream calls_file(argv[1]);
   ofstream stats_file(
@@ -66,8 +68,8 @@ int main(int argc, char **argv) {
       to_vertex = stoi(tokens[1]);
       add_edge_or_update_weigth(0, to_vertex, 1, g);
 #if USE_METIS
-      METIS_Graph.assign_partition_same(partitioning, 0, to_vertex,
-                                        N_PARTITIONS);
+      partitioner->assign_partition_same(partitioning, 0, to_vertex,
+                                         N_PARTITIONS);
 #else
       Utils::assign_hash_parititon(partitioning, 0, to_vertex, N_PARTITIONS);
 #endif
@@ -78,20 +80,20 @@ int main(int argc, char **argv) {
       if (!timestamp_log)
         timestamp_log = new_timestamp;
 #if USE_METIS
-      if (METIS_Graph.trigger_partitioning(new_timestamp,
-                                           last_edge_cross_partition)) {
+      if (partitioner->trigger_partitioning(new_timestamp,
+                                            last_edge_cross_partition)) {
         // Partition the graph with METIS
         vector<idx_t> old_partitioning(partitioning);
-        partitioning = METIS_Graph.partition_METIS(g, N_PARTITIONS);
+        partitioning = partitioner->partition(N_PARTITIONS);
         uint32_t movements_to_repartition =
-            METIS_Graph.calculate_movements_repartition(
+            partitioner->calculate_movements_repartition(
                 old_partitioning, partitioning, N_PARTITIONS);
 
         // Calculate edge-cut / balance
         uint32_t edges_cut;
         vector<uint32_t> balance;
         tie(edges_cut, balance) =
-            METIS_Graph.calculate_edge_cut(g, partitioning);
+            partitioner->calculate_edge_cut(g, partitioning);
         // LOG: REPARTITION Timestamp nVertices nMovements nEdges nEdgesCut
         // vVerticesEachPartition
         stats_file << "REPARTITION " << new_timestamp << ' '
@@ -145,7 +147,7 @@ int main(int argc, char **argv) {
           // ADD edge
           add_edge_or_update_weigth(from_vertex, to_vertex, weight, g);
 #if USE_METIS
-          METIS_Graph.assign_partition_same(partitioning, from_vertex,
+          partitioner->assign_partition_same(partitioning, from_vertex,
                                             to_vertex, N_PARTITIONS);
 #else
           Utils::assign_hash_parititon(partitioning, from_vertex, to_vertex,
@@ -164,6 +166,8 @@ int main(int argc, char **argv) {
       continue;
     }
   }
+  FBPartitioning fbpartitioning;
+  fbpartitioning.get_neighbors(partitioning, g);
 }
 
 //     new_timestamp = stoi(tokens[tokens.size() - 2]);

@@ -8,17 +8,18 @@ typedef boost::adjacency_list<boost::hash_setS, boost::vecS, boost::undirectedS,
                               boost::hash_setS>
     Graph;
 
-typedef boost::graph_traits<Graph>::vertex_iterator vertex_iter;
+typedef boost::graph_traits<Graph>::vertex_iterator vertex_it;
 typedef boost::graph_traits<Graph> GraphTraits;
 typedef Graph::edge_descriptor Edge;
+typedef GraphTraits::out_edge_iterator out_edge_it;
 
-#define USE_METIS true
+#define USE_METIS true 
 #define N_NODES 27251679
 #define METIS_SEED 1
 #define N_PARTITIONS 2
 
-#define TIME_GAP_LOG 60 * 60 * 4          // 4 hours
-#define TIME_REPARTITION 60 * 60 * 24 * 15 // 15 days
+#define TIME_GAP_LOG 60 * 60 * 4                 // 4 hours
+#define TIME_REPARTITION 60 * 60 * 24 * 15       // 15 days
 #define TIME_REPARTITION_WINDOW 60 * 60 * 24 * 2 // 2 days
 #define CROSS_PARTITION_THRESHOLD 0.3 // Threshold for when trigger repartition
 

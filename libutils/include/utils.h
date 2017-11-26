@@ -1,5 +1,5 @@
-#include <metis.h>
 #include <vector>
+#include <metis.h>
 #pragma once
 
 namespace Utils {

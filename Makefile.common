@@ -14,7 +14,7 @@ LDFLAGS   +=
 OBJDIR  = $(THISDIR)/obj
 BINDIR  = $(THISDIR)/bin
 SRCDIR  = $(THISDIR)/src
-INCDIR  = $(THISDIR)/include
+INCDIR  = $(THISDIR)/include -I /home/fynn/.local/include
 
 ## Implicit Section: change the following only when necessary.
 CXX      = clang++ 
