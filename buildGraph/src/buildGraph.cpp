@@ -12,10 +12,12 @@
 #include <metis.h>
 
 #include <METIS_methods.h>
+#include <config.h>
 #include <fbpartitioning.h>
 #include <hash_partitioning.h>
-#include <config.h>
 #include <utils.h>
+
+#define USE_PARTITIONER METIS_PARTITIONER
 
 using namespace std;
 
@@ -28,27 +30,26 @@ void add_edge_or_update_weigth(int from, int to, int weight, Graph &g) {
 
 int main(int argc, char **argv) {
   Graph g;
-  Config config("./config.conf");
   Partitioner *partitioner;
-#if USE_METIS
-  METIS METIS_Graph(METIS_SEED, g, config);
+#if USE_PARTITIONER == METIS_PARTITIONER
+cout << "Using METIS partitioner" << endl;
+  METIS METIS_Graph(g);
   partitioner = &METIS_Graph;
-#else
-  Hash_partitioner hash_partitioner(g, config);
+#elif USE_PARTITIONER == NO_PARTITIONER
+  Hash_partitioner hash_partitioner(g);
   partitioner = &hash_partitioner;
-
+#elif USE_PARTITIONER == FACEBOOK_PARTITIONER
+  FB_partitioner fb_partitioner(g);
+  partitioner = &hash_partitioner;
+#else
+  assert(false)
 #endif
-
 
   ifstream calls_file(argv[1]);
-  ofstream stats_file(
-      "/tmp/edge_cut_evolution_partitions_" + to_string(N_PARTITIONS) +
-      "_period_" + to_string(TIME_GAP_LOG) +
-#if USE_METIS
-      "_" + config.get_METIS_name() + "_repart_" + to_string(TIME_REPARTITION) +
-      "_seed_" + to_string(METIS_SEED)
-#endif
-      + ".txt");
+  ofstream stats_file("/tmp/edge_cut_evolution_partitions_" +
+                      to_string(N_PARTITIONS) + "_period_" +
+                      to_string(TIME_GAP_LOG) + "_" + partitioner->get_name() +
+                      +".txt");
 
   uint32_t lineN, timestamp_log, new_timestamp;
   uint32_t from_vertex, to_vertex, weight;
@@ -75,8 +76,7 @@ int main(int argc, char **argv) {
     case 'G':
       to_vertex = stoi(tokens[1]);
       add_edge_or_update_weigth(0, to_vertex, 1, g);
-      partitioner->assign_partition(partitioning, 0, to_vertex,
-                                         N_PARTITIONS);
+      partitioner->assign_partition(partitioning, 0, to_vertex, N_PARTITIONS);
       continue;
 
     case 'B':
@@ -148,8 +148,8 @@ int main(int argc, char **argv) {
 
           // ADD edge
           add_edge_or_update_weigth(from_vertex, to_vertex, weight, g);
-          partitioner->assign_partition(partitioning, from_vertex,
-                                             to_vertex, N_PARTITIONS);
+          partitioner->assign_partition(partitioning, from_vertex, to_vertex,
+                                        N_PARTITIONS);
           ++total_edge_access;
           if (partitioning[from_vertex] != partitioning[to_vertex]) {
             ++cross_edge_access;
@@ -163,8 +163,8 @@ int main(int argc, char **argv) {
       continue;
     }
   }
-  FBPartitioning fbpartitioning;
-  fbpartitioning.get_neighbors(partitioning, g);
+  // FBPartitioning fbpartitioning;
+  // fbpartitioning.get_neighbors(partitioning, g);
 }
 
 //     new_timestamp = stoi(tokens[tokens.size() - 2]);

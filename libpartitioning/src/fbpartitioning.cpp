@@ -3,7 +3,7 @@
 #include <fbpartitioning.h>
 
 std::vector<uint32_t>
-FBPartitioning::get_neighbors(const std::vector<idx_t> &partitioning,
+FB_partitioner::get_neighbors(const std::vector<int32_t> &partitioning,
                               const Graph &g) {
 
   out_edge_it edg_it, edg_it_end;

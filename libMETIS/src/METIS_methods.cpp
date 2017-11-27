@@ -1,12 +1,11 @@
 #include <cassert>
+#include <iomanip>
 #include <metis.h>
 
 #include <METIS_methods.h>
-#include <config.h>
 #include <partitioner.h>
 
-METIS::METIS(idx_t seed, const Graph &graph, const Config &config)
-    : Partitioner(seed, graph, config) {
+METIS::METIS(const Graph &graph) : Partitioner(METIS_SEED, graph) {
   assert(seed > 0);
   METIS_SetDefaultOptions(METIS_OPTIONS);
   METIS_OPTIONS[METIS_OPTION_OBJTYPE] = METIS_OBJTYPE_VOL;
@@ -73,7 +72,7 @@ std::vector<idx_t> METIS::partition(idx_t nparts) {
 
 bool METIS::trigger_partitioning(uint32_t new_timestamp,
                                  bool last_edge_cross_partition) {
-  if (config.PARTITIONING_MODE == config.DYNAMIC_PARTITIONING) {
+  if (PARTITIONING_MODE == DYNAMIC_PARTITIONING) {
     ++total_calls;
     cross_partition_calls += last_edge_cross_partition;
     if (new_timestamp - timestamp_last_check > TIME_REPARTITION_WINDOW) {
@@ -90,7 +89,7 @@ bool METIS::trigger_partitioning(uint32_t new_timestamp,
       timestamp_last_check = new_timestamp;
     }
     return false;
-  } else if (config.PARTITIONING_MODE == config.PERIODIC_PARTITIONING) {
+  } else if (PARTITIONING_MODE == PERIODIC_PARTITIONING) {
     if (new_timestamp - timestamp_last_repartition > TIME_REPARTITION) {
       timestamp_last_repartition = new_timestamp;
       return true;
@@ -98,4 +97,19 @@ bool METIS::trigger_partitioning(uint32_t new_timestamp,
     return false;
   } else
     assert(false);
+}
+
+std::string METIS::get_name() {
+
+  std::stringstream stream;
+  stream << std::fixed << std::setprecision(2) << CROSS_PARTITION_THRESHOLD;
+  std::string threshold = stream.str();
+
+  std::string METIS_mode = (PARTITIONING_MODE == PERIODIC_PARTITIONING)
+                             ? "PERIODIC"
+                             : "DYNAMIC_" + threshold + "_WINDOW_" +
+                                   std::to_string(TIME_REPARTITION_WINDOW) + "_";
+
+  return METIS_mode + "repart_" + std::to_string(TIME_REPARTITION) + "_seed_" +
+         std::to_string(METIS_SEED);
 }
