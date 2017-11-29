@@ -1,38 +1,40 @@
+#include <iostream>
 #include <partitioner.h>
-
 void Partitioner::assign_partition(std::vector<int32_t> &partitioning,
-                                        uint32_t from_vertex,
-                                        uint32_t to_vertex, int32_t nparts) {
-  // NO partition for from_vertex
-  if (from_vertex == partitioning.size()) {
-    // Self-reference
-    if (to_vertex == from_vertex) {
-      partitioning.push_back(from_vertex % nparts);
+                                   const std::set<uint32_t> &vertex_list,
+                                   int32_t nparts) {
+  std::vector<int32_t> best_partitions(N_PARTITIONS, 0);
+  auto needs_partitioning = vertex_list.end();
+  for (auto vertex = vertex_list.begin(); vertex != vertex_list.end();
+       ++vertex) {
+    if (*vertex >= partitioning.size()) {
+      needs_partitioning = vertex;
+      break;
     }
-    // No partition for both vertices
-    else if (to_vertex >= partitioning.size()) {
-      partitioning.push_back(from_vertex % nparts);
-      partitioning.push_back(to_vertex % nparts);
-    }
-    // Partitioning to to_vertex exist
-    else {
-      partitioning.push_back(partitioning[to_vertex]);
+    ++best_partitions[partitioning[*vertex]];
+  }
+
+  int best_partition = 0;
+  bool is_same = true;
+  for (int i = 1; i < N_PARTITIONS; ++i) {
+    if (best_partitions[i] != best_partitions[best_partition])
+      is_same = false;
+    if (best_partitions[i] > best_partitions[best_partition]) {
+      best_partition = i;
     }
   }
-  // to_vertex has no partition
-  else if (to_vertex == partitioning.size()) {
-    if (from_vertex == to_vertex) {
-      partitioning.push_back(from_vertex % nparts);
+  for (auto vertex = needs_partitioning; vertex != vertex_list.end();
+       ++vertex) {
+    assert(*vertex == partitioning.size());
+    // Cannot find good partition to put
+    if (is_same) {
+      auto most_unbalanced_partition =
+          std::distance(m_balance.begin(),
+                        std::min_element(m_balance.begin(), m_balance.end()));
+      best_partition = most_unbalanced_partition;
     }
-    // No partition for both vertices
-    else if (from_vertex > partitioning.size()) {
-      partitioning.push_back(from_vertex % nparts);
-      partitioning.push_back(to_vertex % nparts);
-    }
-    // Partitioning to to_vertex exist
-    else {
-      partitioning.push_back(partitioning[from_vertex]);
-    }
+    partitioning.push_back(best_partition);
+    ++m_balance[best_partition];
   }
 }
 
@@ -60,21 +62,23 @@ Partitioner::calculate_edge_cut(const Graph &g,
   typename GraphTraits::edge_iterator ei, ei_end;
   uint32_t edges_cut = 0;
 
-  std::vector<uint32_t> balances(N_PARTITIONS);
+  for (int i = 0; i < N_PARTITIONS; ++i)
+    m_balance[i] = 0;
   for (auto vertex = boost::vertices(g); vertex.first != vertex.second;
-       ++vertex.first)
-    ++balances[partitioning[*vertex.first]];
+       ++vertex.first) {
+    ++m_balance[partitioning[*vertex.first]];
+  }
 
   for (tie(ei, ei_end) = edges(g); ei != ei_end; ++ei)
     if (partitioning[boost::source(*ei, g)] !=
         partitioning[boost::target(*ei, g)])
       ++edges_cut;
 
-  return make_tuple(edges_cut, balances);
+  return make_tuple(edges_cut, m_balance);
 }
 
 void Partitioner::assign_partition_hash(std::vector<int32_t> &partitioning,
-                                  uint32_t vertex, int32_t nparts) {
+                                        uint32_t vertex, int32_t nparts) {
   if (vertex == partitioning.size()) {
     partitioning.push_back(vertex % nparts);
   }

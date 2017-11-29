@@ -5,40 +5,40 @@
 #include <METIS_methods.h>
 #include <partitioner.h>
 
-METIS::METIS(const Graph &graph) : Partitioner(METIS_SEED, graph) {
-  assert(seed > 0);
+METIS_partitioner::METIS_partitioner(const Graph &graph) : Partitioner(METIS_SEED, graph) {
+  assert(m_seed > 0);
   METIS_SetDefaultOptions(METIS_OPTIONS);
   METIS_OPTIONS[METIS_OPTION_OBJTYPE] = METIS_OBJTYPE_VOL;
-  METIS_OPTIONS[METIS_OPTION_SEED] = seed;
+  METIS_OPTIONS[METIS_OPTION_SEED] = m_seed;
   METIS_OPTIONS[METIS_OPTION_UFACTOR] = 300;
   // METIS_OPTIONS[METIS_OPTION_DBGLVL] = 2;
 }
 
-std::vector<idx_t> METIS::partition(idx_t nparts) {
+std::vector<idx_t> METIS_partitioner::partition(idx_t nparts) {
   out_edge_it edg_it, edg_it_end;
   Edge ed;
   // void partition_METIS(Graph &g, idx_t nparts) {
   std::pair<vertex_it, vertex_it> vertex;
 
-  idx_t nvtxs = boost::num_vertices(graph);
+  idx_t nvtxs = boost::num_vertices(m_graph);
   if (!nvtxs)
     return std::vector<idx_t>();
   idx_t ncon = 1;
   idx_t *xadj = (idx_t *)malloc((nvtxs + 1) * sizeof(idx_t));
-  idx_t *adjncy = (idx_t *)malloc(2 * boost::num_edges(graph) * sizeof(idx_t));
-  idx_t *adjwgt = (idx_t *)malloc(2 * boost::num_edges(graph) * sizeof(idx_t));
+  idx_t *adjncy = (idx_t *)malloc(2 * boost::num_edges(m_graph) * sizeof(idx_t));
+  idx_t *adjwgt = (idx_t *)malloc(2 * boost::num_edges(m_graph) * sizeof(idx_t));
   idx_t *part = (idx_t *)malloc(nvtxs * sizeof(idx_t));
 
   uint32_t weight, edge_idx = 0;
   xadj[0] = 0;
   int32_t v_idx = 1;
-  for (vertex = boost::vertices(graph); vertex.first != vertex.second;
+  for (vertex = boost::vertices(m_graph); vertex.first != vertex.second;
        ++vertex.first, ++v_idx) {
-    for (tie(edg_it, edg_it_end) = boost::out_edges(*vertex.first, graph);
+    for (tie(edg_it, edg_it_end) = boost::out_edges(*vertex.first, m_graph);
          edg_it != edg_it_end; ++edg_it) {
       ed = *edg_it;
-      weight = boost::get(boost::edge_weight_t(), graph, ed);
-      adjncy[edge_idx] = boost::target(ed, graph);
+      weight = boost::get(boost::edge_weight_t(), m_graph, ed);
+      adjncy[edge_idx] = boost::target(ed, m_graph);
       adjwgt[edge_idx] = weight;
       ++edge_idx;
     }
@@ -70,7 +70,7 @@ std::vector<idx_t> METIS::partition(idx_t nparts) {
   return partitioning;
 }
 
-bool METIS::trigger_partitioning(uint32_t new_timestamp,
+bool METIS_partitioner::trigger_partitioning(uint32_t new_timestamp,
                                  bool last_edge_cross_partition) {
   if (PARTITIONING_MODE == DYNAMIC_PARTITIONING) {
     ++total_calls;
@@ -99,14 +99,14 @@ bool METIS::trigger_partitioning(uint32_t new_timestamp,
     assert(false);
 }
 
-std::string METIS::get_name() {
+std::string METIS_partitioner::get_name() {
 
   std::stringstream stream;
   stream << std::fixed << std::setprecision(2) << CROSS_PARTITION_THRESHOLD;
   std::string threshold = stream.str();
 
   std::string METIS_mode = (PARTITIONING_MODE == PERIODIC_PARTITIONING)
-                             ? "PERIODIC"
+                             ? "PERIODIC_"
                              : "DYNAMIC_" + threshold + "_WINDOW_" +
                                    std::to_string(TIME_REPARTITION_WINDOW) + "_";
 

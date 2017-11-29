@@ -1,37 +1,24 @@
 #include <hash_partitioning.h>
 
 void Hash_partitioner::assign_partition(std::vector<int32_t> &partitioning,
-                                        uint32_t from_vertex,
-                                        uint32_t to_vertex, int32_t nparts) {
-  if (from_vertex == partitioning.size()) {
-    // Self-reference
-    if (to_vertex == from_vertex) {
-      partitioning.push_back(from_vertex % nparts);
-    }
-    // No partition for both vertices
-    else if (to_vertex >= partitioning.size()) {
-      partitioning.push_back(from_vertex % nparts);
-      partitioning.push_back(to_vertex % nparts);
-    }
-    // Partitioning to to_vertex exist
-    else {
-      // partitioning.push_back(partitioning[to_vertex]);
-      partitioning.push_back(from_vertex % nparts);
+                                        const std::set<uint32_t> &vertex_list,
+                                        int32_t nparts) {
+  auto needs_partitioning = vertex_list.end();
+  uint32_t best_partition;
+  for (auto vertex = vertex_list.begin(); vertex != vertex_list.end();
+       ++vertex) {
+    if (*vertex >= partitioning.size()) {
+      needs_partitioning = vertex;
+      break;
     }
   }
-  // to_vertex has no partition
-  else if (to_vertex == partitioning.size()) {
-    if (from_vertex == to_vertex) {
-      partitioning.push_back(from_vertex % nparts);
-    }
-    // No partition for both vertices
-    else if (from_vertex > partitioning.size()) {
-      partitioning.push_back(from_vertex % nparts);
-      partitioning.push_back(to_vertex % nparts);
-    }
-    // Partitioning to from_vertex exist
-    else {
-      partitioning.push_back(to_vertex % nparts);
-    }
+
+  for (auto vertex = needs_partitioning; vertex != vertex_list.end();
+       ++vertex) {
+    best_partition = (*vertex % nparts);
+    assert(*vertex == partitioning.size());
+    // Cannot find good partition to put
+    partitioning.push_back(best_partition);
+    ++m_balance[best_partition];
   }
 }

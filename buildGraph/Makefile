@@ -19,7 +19,6 @@ LDFLAGS = \
 	-L $(THISDIR)/../libpartitioning/bin \
 	-L /usr/local/lib \
 	-lMETIS \
-	-lcommon \
 	-lutils \
 	-lpartitioning
 

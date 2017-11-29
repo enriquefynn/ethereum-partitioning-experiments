@@ -8,6 +8,8 @@ INCLUDES = \
 	-I $(THISDIR)/../libpartitioning/include
 LDFLAGS = \
 	-L /usr/local/lib \
+	-L $(THISDIR)/../libpartitioning/bin \
+	-lpartitioning \
 	-lmetis
 
 include ../Makefile.lib

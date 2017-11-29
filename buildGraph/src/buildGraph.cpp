@@ -17,7 +17,9 @@
 #include <hash_partitioning.h>
 #include <utils.h>
 
-#define USE_PARTITIONER METIS_PARTITIONER
+#define DEBUG
+
+const uint8_t USE_PARTITIONER = NO_PARTITIONER;
 
 using namespace std;
 
@@ -31,19 +33,25 @@ void add_edge_or_update_weigth(int from, int to, int weight, Graph &g) {
 int main(int argc, char **argv) {
   Graph g;
   Partitioner *partitioner;
-#if USE_PARTITIONER == METIS_PARTITIONER
-cout << "Using METIS partitioner" << endl;
-  METIS METIS_Graph(g);
-  partitioner = &METIS_Graph;
-#elif USE_PARTITIONER == NO_PARTITIONER
-  Hash_partitioner hash_partitioner(g);
-  partitioner = &hash_partitioner;
-#elif USE_PARTITIONER == FACEBOOK_PARTITIONER
-  FB_partitioner fb_partitioner(g);
-  partitioner = &hash_partitioner;
-#else
-  assert(false)
-#endif
+  switch (USE_PARTITIONER) {
+
+  case METIS_PARTITIONER:
+    cout << "Using METIS partitioner" << endl;
+    partitioner = new METIS_partitioner(g);
+    break;
+  case NO_PARTITIONER:
+    cout << "Using Hash partitioner" << endl;
+    partitioner = new Hash_partitioner(g);
+    break;
+  case FACEBOOK_PARTITIONER:
+    cout << "Using Facebook partitioner" << endl;
+    partitioner = new FB_partitioner(g);
+    break;
+
+  default:
+    assert(false);
+    break;
+  }
 
   ifstream calls_file(argv[1]);
   ofstream stats_file("/tmp/edge_cut_evolution_partitions_" +
@@ -73,13 +81,18 @@ cout << "Using METIS partitioner" << endl;
 
     switch (tokens[0][0]) {
     // Genesis
-    case 'G':
+    case 'G': {
+      set<uint32_t> involved_vertices;
       to_vertex = stoi(tokens[1]);
+      involved_vertices.insert(0);
+      involved_vertices.insert(to_vertex);
       add_edge_or_update_weigth(0, to_vertex, 1, g);
-      partitioner->assign_partition(partitioning, 0, to_vertex, N_PARTITIONS);
-      continue;
 
-    case 'B':
+      partitioner->assign_partition(partitioning, involved_vertices,
+                                    N_PARTITIONS);
+      break;
+    }
+    case 'B': {
       new_timestamp = stoi(tokens[2]);
       if (!timestamp_log)
         timestamp_log = new_timestamp;
@@ -112,31 +125,42 @@ cout << "Using METIS partitioner" << endl;
         assert(total_edge_access >= cross_edge_access);
         stats_file << "POINT " << cross_edge_access << ' '
                    << (total_edge_access - cross_edge_access) << ' '
-                   << new_timestamp << endl;
-
+                   << new_timestamp << ' ';
+        for (int i = 0; i < N_PARTITIONS; ++i)
+          stats_file << partitioner->m_balance[i] << ' ';
+        stats_file << endl;
         total_edge_access = cross_edge_access = 0;
         timestamp_log = new_timestamp;
       }
-      continue;
+      break;
+    }
 
-    case 'T':
-      int author = stoi(tokens[1]);
+    case 'T': {
+      set<uint32_t> involved_vertices;
+      vector<pair<uint32_t, uint32_t>> involved_edges;
+      uint32_t author = stoi(tokens[1]);
+      involved_vertices.insert(author);
       // tokens[1] : from
       int i = 3, type;
       while (i < tokens.size()) {
         type = stoi(tokens[i]);
         ++i;
         int numCalls = stoi(tokens[i]);
-
+        // cout << "Type " << type << " Num Calls: " << numCalls << ' ' << lineN
+        // << endl;
         ++i;
         for (int j = 0; j < numCalls; ++j) {
+          // cout << j << endl;
           if (tokens[i] == "1") {
+            // cout << "1" << endl;
             ++i;
             from_vertex = author;
             to_vertex = stoi(tokens[i]);
           } else {
+
             from_vertex = stoi(tokens[++i]);
             to_vertex = stoi(tokens[++i]);
+            // cout << "2 " << from_vertex << ' ' << to_vertex << endl;
           }
           if (type <= 2) {
             ++i;
@@ -145,26 +169,43 @@ cout << "Using METIS partitioner" << endl;
           ++i;
           // repetition
           weight = stoi(tokens[i]);
+          // cout << "WEIGHT: " << weight << endl;
 
           // ADD edge
           add_edge_or_update_weigth(from_vertex, to_vertex, weight, g);
-          partitioner->assign_partition(partitioning, from_vertex, to_vertex,
-                                        N_PARTITIONS);
-          ++total_edge_access;
-          if (partitioning[from_vertex] != partitioning[to_vertex]) {
-            ++cross_edge_access;
-            last_edge_cross_partition = true;
-          } else
-            last_edge_cross_partition = false;
+          involved_vertices.insert(from_vertex);
+          involved_vertices.insert(to_vertex);
+          involved_edges.push_back({from_vertex, to_vertex});
+          // cout << "FINISH ADDING EDGE" << endl;
+          // cout << new_timestamp << ' ' << partitioning.size() << " From: " <<
+          // from_vertex << " To: " << to_vertex << endl; cout << "FINISH
+          // ASSIGNING PARTITION" << endl;
+          // cout << partitioning.size() << endl;
 
           ++i;
         }
       }
-      continue;
+      partitioner->assign_partition(partitioning, involved_vertices,
+                                    N_PARTITIONS);
+      for (const auto &edge : involved_edges) {
+        ++total_edge_access;
+        if (partitioning[edge.first] != partitioning[edge.second]) {
+          ++cross_edge_access;
+          last_edge_cross_partition = true;
+        } else {
+          last_edge_cross_partition = false;
+        }
+      }
+      // for (const auto &p : partitioning)
+      //   cout << p << ' ';
+      // cout << endl;
+      break;
+    }
     }
   }
   // FBPartitioning fbpartitioning;
   // fbpartitioning.get_neighbors(partitioning, g);
+  return 0;
 }
 
 //     new_timestamp = stoi(tokens[tokens.size() - 2]);

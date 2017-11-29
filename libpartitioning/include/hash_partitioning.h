@@ -12,17 +12,15 @@
 class Hash_partitioner : public Partitioner {
 
 public:
-  Hash_partitioner(const Graph &graph)
-      : Partitioner(0, graph) {}
+  Hash_partitioner(const Graph &graph) : Partitioner(0, graph) {}
 
-  void assign_partition(std::vector<int32_t> &partitioning,
-                        uint32_t from_vertex, uint32_t to_vertex,
-                        int32_t nparts);
-
+void assign_partition(std::vector<int32_t> &partitioning,
+                        const std::set<uint32_t> &vertex_list, int32_t nparts);
+  
   std::vector<int32_t> partition(int32_t nparts) {
     return std::vector<int32_t>();
   };
-  std::string get_name() {return "HASH";}
+  std::string get_name() { return "HASH"; }
 
   bool trigger_partitioning(uint32_t new_timestamp,
                             bool last_edge_cross_partition) {

@@ -12,7 +12,7 @@ typedef boost::graph_traits<Graph> GraphTraits;
 typedef boost::graph_traits<Graph>::vertex_iterator vertex_it;
 typedef Graph::edge_descriptor Edge;
 typedef GraphTraits::out_edge_iterator out_edge_it;
-#define NO_PARTITION 0
+#define NO_PARTITIONER 0
 #define METIS_PARTITIONER 1
 #define FACEBOOK_PARTITIONER 2
 
