@@ -2,14 +2,14 @@
 
 all:
 	make -C libutils all
-#	make -C libcommon all
+	make -C libcommon all
 	make -C libpartitioning all
 	make -C libMETIS all
 	make -C buildGraph all
 
 clean:
 	make -C libutils clean
-#	make -C libcommon clean
+	make -C libcommon clean
 	make -C libpartitioning clean
 	make -C libMETIS clean
 	make -C buildGraph clean

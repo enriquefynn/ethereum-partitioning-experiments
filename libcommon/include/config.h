@@ -12,12 +12,20 @@ typedef boost::graph_traits<Graph> GraphTraits;
 typedef boost::graph_traits<Graph>::vertex_iterator vertex_it;
 typedef Graph::edge_descriptor Edge;
 typedef GraphTraits::out_edge_iterator out_edge_it;
-#define NO_PARTITIONER 0
-#define METIS_PARTITIONER 1
-#define FACEBOOK_PARTITIONER 2
 
 #define PERIODIC_PARTITIONING 0
-#define DYNAMIC_PARTITIONING 1 
+#define DYNAMIC_PARTITIONING 1
 
 #define N_PARTITIONS 2
 #define TIME_GAP_LOG 60 * 60 * 4 // 4 hours
+
+class Config {
+public:
+  enum { HASH_PARTITIONER, METIS_PARTITIONER, FACEBOOK_PARTITIONER };
+  uint8_t PARTITIONING_MODE = 0;
+  Config(const std::string &config_file);
+
+  Config() = delete;
+  Config(Config const &) = delete;
+  Config(Config &&) = default;
+};

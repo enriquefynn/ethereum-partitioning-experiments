@@ -14,7 +14,7 @@ METIS_partitioner::METIS_partitioner(const Graph &graph) : Partitioner(METIS_SEE
   // METIS_OPTIONS[METIS_OPTION_DBGLVL] = 2;
 }
 
-std::vector<idx_t> METIS_partitioner::partition(idx_t nparts) {
+uint32_t METIS_partitioner::partition(idx_t nparts) {
   out_edge_it edg_it, edg_it_end;
   Edge ed;
   // void partition_METIS(Graph &g, idx_t nparts) {
@@ -22,7 +22,7 @@ std::vector<idx_t> METIS_partitioner::partition(idx_t nparts) {
 
   idx_t nvtxs = boost::num_vertices(m_graph);
   if (!nvtxs)
-    return std::vector<idx_t>();
+    assert(false);
   idx_t ncon = 1;
   idx_t *xadj = (idx_t *)malloc((nvtxs + 1) * sizeof(idx_t));
   idx_t *adjncy = (idx_t *)malloc(2 * boost::num_edges(m_graph) * sizeof(idx_t));
@@ -62,12 +62,14 @@ std::vector<idx_t> METIS_partitioner::partition(idx_t nparts) {
       &objval, part);
   assert(return_METIS == METIS_OK);
 
-  std::vector<idx_t> partitioning = std::vector<idx_t>(part, part + nvtxs);
+  auto old_partitioning = std::move(m_partitioning);
+  m_partitioning = std::vector<idx_t>(part, part + nvtxs);
+
   free(xadj);
   free(adjncy);
   free(adjwgt);
   free(part);
-  return partitioning;
+  return calculate_movements_repartition(old_partitioning, nparts);
 }
 
 bool METIS_partitioner::trigger_partitioning(uint32_t new_timestamp,

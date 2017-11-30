@@ -14,11 +14,10 @@ class Hash_partitioner : public Partitioner {
 public:
   Hash_partitioner(const Graph &graph) : Partitioner(0, graph) {}
 
-void assign_partition(std::vector<int32_t> &partitioning,
-                        const std::set<uint32_t> &vertex_list, int32_t nparts);
+void assign_partition(const std::set<uint32_t> &vertex_list, int32_t nparts);
   
-  std::vector<int32_t> partition(int32_t nparts) {
-    return std::vector<int32_t>();
+  uint32_t partition(int32_t nparts) {
+    return 0;
   };
   std::string get_name() { return "HASH"; }
 

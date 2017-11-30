@@ -20,6 +20,7 @@ LDFLAGS = \
 	-L /usr/local/lib \
 	-lMETIS \
 	-lutils \
-	-lpartitioning
+	-lpartitioning \
+	-lcommon
 
 include ../Makefile.exe

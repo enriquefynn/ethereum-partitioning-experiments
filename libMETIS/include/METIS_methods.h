@@ -28,7 +28,7 @@ class METIS_partitioner : public Partitioner {
 public:
   idx_t METIS_OPTIONS[METIS_NOPTIONS];
   METIS_partitioner(const Graph &graph);
-  std::vector<idx_t> partition(idx_t nparts);
+  uint32_t partition(idx_t nparts);
 
   bool trigger_partitioning(uint32_t new_timestamp,
                             bool last_edge_cross_partition);
