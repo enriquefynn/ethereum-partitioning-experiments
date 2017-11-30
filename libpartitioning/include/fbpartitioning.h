@@ -23,7 +23,7 @@ class FB_partitioner : public Partitioner {
 
   const uint8_t PARTITIONING_MODE = PERIODIC_PARTITIONING;
 
-  std::vector<uint32_t> get_neighbors(const std::vector<int32_t> &partitioning);
+  std::vector<uint32_t> get_neighbors();
 
 public:
   FB_partitioner(const Graph &graph) : Partitioner(0, graph) {}

@@ -5,7 +5,8 @@
 #include <METIS_methods.h>
 #include <partitioner.h>
 
-METIS_partitioner::METIS_partitioner(const Graph &graph) : Partitioner(METIS_SEED, graph) {
+METIS_partitioner::METIS_partitioner(const Graph &graph)
+    : Partitioner(METIS_SEED, graph) {
   assert(m_seed > 0);
   METIS_SetDefaultOptions(METIS_OPTIONS);
   METIS_OPTIONS[METIS_OPTION_OBJTYPE] = METIS_OBJTYPE_VOL;
@@ -25,8 +26,10 @@ uint32_t METIS_partitioner::partition(idx_t nparts) {
     assert(false);
   idx_t ncon = 1;
   idx_t *xadj = (idx_t *)malloc((nvtxs + 1) * sizeof(idx_t));
-  idx_t *adjncy = (idx_t *)malloc(2 * boost::num_edges(m_graph) * sizeof(idx_t));
-  idx_t *adjwgt = (idx_t *)malloc(2 * boost::num_edges(m_graph) * sizeof(idx_t));
+  idx_t *adjncy =
+      (idx_t *)malloc(2 * boost::num_edges(m_graph) * sizeof(idx_t));
+  idx_t *adjwgt =
+      (idx_t *)malloc(2 * boost::num_edges(m_graph) * sizeof(idx_t));
   idx_t *part = (idx_t *)malloc(nvtxs * sizeof(idx_t));
 
   uint32_t weight, edge_idx = 0;
@@ -73,7 +76,7 @@ uint32_t METIS_partitioner::partition(idx_t nparts) {
 }
 
 bool METIS_partitioner::trigger_partitioning(uint32_t new_timestamp,
-                                 bool last_edge_cross_partition) {
+                                             bool last_edge_cross_partition) {
   if (PARTITIONING_MODE == DYNAMIC_PARTITIONING) {
     ++total_calls;
     cross_partition_calls += last_edge_cross_partition;
@@ -107,10 +110,11 @@ std::string METIS_partitioner::get_name() {
   stream << std::fixed << std::setprecision(2) << CROSS_PARTITION_THRESHOLD;
   std::string threshold = stream.str();
 
-  std::string METIS_mode = (PARTITIONING_MODE == PERIODIC_PARTITIONING)
-                             ? "PERIODIC_"
-                             : "DYNAMIC_" + threshold + "_WINDOW_" +
-                                   std::to_string(TIME_REPARTITION_WINDOW) + "_";
+  std::string METIS_mode =
+      "METIS_" + ((PARTITIONING_MODE == PERIODIC_PARTITIONING)
+          ? "PERIODIC_"
+          : "DYNAMIC_" + threshold + "_WINDOW_" +
+                std::to_string(TIME_REPARTITION_WINDOW) + "_");
 
   return METIS_mode + "repart_" + std::to_string(TIME_REPARTITION) + "_seed_" +
          std::to_string(METIS_SEED);

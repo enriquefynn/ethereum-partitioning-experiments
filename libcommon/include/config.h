@@ -21,8 +21,13 @@ typedef GraphTraits::out_edge_iterator out_edge_it;
 
 class Config {
 public:
-  enum { HASH_PARTITIONER, METIS_PARTITIONER, FACEBOOK_PARTITIONER };
-  uint8_t PARTITIONING_MODE = 0;
+  enum {
+    HASH_PARTITIONER,
+    METIS_PARTITIONER,
+    HMETIS_PARTITIONER,
+    FACEBOOK_PARTITIONER
+  };
+  uint8_t PARTITIONING_MODE = HASH_PARTITIONER;
   Config(const std::string &config_file);
 
   Config() = delete;

@@ -9,7 +9,9 @@ INCLUDES = \
 LDFLAGS = \
 	-L /usr/local/lib \
 	-L $(THISDIR)/../libpartitioning/bin \
+	-L ~/GIT/hmetis-1.5-osx-i686 \
 	-lpartitioning \
-	-lmetis
+	-lmetis \
+	-lhmetis
 
 include ../Makefile.lib

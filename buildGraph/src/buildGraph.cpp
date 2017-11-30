@@ -12,10 +12,11 @@
 #include <metis.h>
 
 #include <METIS_methods.h>
-#include <config.h>
+#include <HMETIS_methods.h>
 #include <fbpartitioning.h>
 #include <hash_partitioning.h>
 #include <utils.h>
+#include <config.h>
 
 using namespace std;
 
@@ -40,6 +41,10 @@ int main(int argc, char **argv) {
     cout << "Using METIS partitioner" << endl;
     partitioner = new METIS_partitioner(g);
     break;
+  case config.HMETIS_PARTITIONER:
+    cout << "Using Hyper-METIS partitioner" << endl;
+    partitioner = new HMETIS_partitioner(g);
+    break;
   case config.FACEBOOK_PARTITIONER:
     cout << "Using Facebook partitioner" << endl;
     partitioner = new FB_partitioner(g);
@@ -59,7 +64,6 @@ int main(int argc, char **argv) {
   uint32_t lineN, timestamp_log, new_timestamp;
   uint32_t from_vertex, to_vertex, weight;
 
-  unordered_map<uint32_t, int32_t> vertex_partition;
   uint32_t total_edge_access, cross_edge_access;
   bool last_edge_cross_partition = false;
   total_edge_access = cross_edge_access = 0;
@@ -67,6 +71,9 @@ int main(int argc, char **argv) {
   lineN = timestamp_log = 0;
   vector<string> tokens;
   string str;
+
+  bool processing_genesis = false;
+  set<uint32_t> involved_vertices;
 
   while (getline(calls_file, str)) {
     lineN += 1;
@@ -78,16 +85,18 @@ int main(int argc, char **argv) {
     switch (tokens[0][0]) {
     // Genesis
     case 'G': {
-      set<uint32_t> involved_vertices;
+      processing_genesis = true;
       to_vertex = stoi(tokens[1]);
       involved_vertices.insert(0);
       involved_vertices.insert(to_vertex);
       add_edge_or_update_weigth(0, to_vertex, 1, g);
-
-      partitioner->assign_partition(involved_vertices, N_PARTITIONS);
       break;
     }
     case 'B': {
+      if (processing_genesis) {
+        partitioner->assign_partition(involved_vertices, N_PARTITIONS);
+        processing_genesis = false;
+      } 
       new_timestamp = stoi(tokens[2]);
       if (!timestamp_log)
         timestamp_log = new_timestamp;
@@ -127,7 +136,7 @@ int main(int argc, char **argv) {
     }
 
     case 'T': {
-      set<uint32_t> involved_vertices;
+      involved_vertices.clear();
       vector<pair<uint32_t, uint32_t>> involved_edges;
       uint32_t author = stoi(tokens[1]);
       involved_vertices.insert(author);

@@ -15,6 +15,8 @@ Config::Config(const std::string &input_config) {
         PARTITIONING_MODE = HASH_PARTITIONER;
       else if (value == "METIS")
         PARTITIONING_MODE = METIS_PARTITIONER;
+       else if (value == "HMETIS")
+        PARTITIONING_MODE = HMETIS_PARTITIONER;
       else if (value == "FACEBOOK")
         PARTITIONING_MODE = FACEBOOK_PARTITIONER;
       else

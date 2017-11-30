@@ -34,7 +34,7 @@ bool FB_partitioner::trigger_partitioning(uint32_t new_timestamp,
 }
 
 std::vector<uint32_t>
-FB_partitioner::get_neighbors(const std::vector<int32_t> &partitioning) {
+FB_partitioner::get_neighbors() {
 
   out_edge_it edg_it, edg_it_end;
   Edge ed;
@@ -49,7 +49,7 @@ FB_partitioner::get_neighbors(const std::vector<int32_t> &partitioning) {
          edg_it != edg_it_end; ++edg_it) {
       ed = *edg_it;
 
-      ++neighbors_in_partition[partitioning[boost::target(ed, m_graph)]];
+      ++neighbors_in_partition[m_partitioning[boost::target(ed, m_graph)]];
     }
     auto max_p = std::distance(neighbors_in_partition.begin(),
                                std::max_element(neighbors_in_partition.begin(),
@@ -64,8 +64,17 @@ FB_partitioner::get_neighbors(const std::vector<int32_t> &partitioning) {
 }
 
 uint32_t FB_partitioner::partition(int32_t nparts) {
+  auto where_to_go = get_neighbors();
+  
+
+
+
   m_partitioning = std::vector<int32_t>(boost::num_vertices(m_graph), 0);
-  return 0;
+
+
+  auto old_partitioning = std::move(m_partitioning);
+  return calculate_movements_repartition(old_partitioning, nparts);
+  
 };
 
 // Hash partitioning for new vertexes
@@ -100,5 +109,7 @@ std::string FB_partitioner::get_name() {
           ? "PERIODIC_"
           : "DYNAMIC_" + threshold + "_WINDOW_" +
                 std::to_string(TIME_REPARTITION_WINDOW) + "_";
-  return "FACEBOOK";
+
+  return "FACEBOOK_" + partitioning_mode + "repart_" + std::to_string(TIME_REPARTITION) + "_seed_" +
+         std::to_string(m_seed);
 }
