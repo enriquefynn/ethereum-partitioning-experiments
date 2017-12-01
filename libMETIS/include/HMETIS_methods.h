@@ -6,7 +6,6 @@
 #include <set>
 #include <vector>
 
-#include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graph_traits.hpp>
 
 #include <config.h>
@@ -41,7 +40,7 @@ class HMETIS_partitioner : public Partitioner {
   int m_eind_size = 0;
 
 public:
-  const int METIS_UBFACTOR = 20;
+  const int METIS_UBFACTOR = 15;
   int METIS_OPTIONS[9];
   HMETIS_partitioner(const Graph &graph);
   uint32_t partition(int nparts);

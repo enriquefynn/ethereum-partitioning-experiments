@@ -4,7 +4,6 @@
 #include <metis.h>
 #include <vector>
 
-#include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graph_traits.hpp>
 
 #include <config.h>
