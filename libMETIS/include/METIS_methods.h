@@ -17,20 +17,20 @@ class METIS_partitioner : public Partitioner {
   float cross_partition_calls = 0;
   float total_calls = 0;
 
-  const uint32_t TIME_REPARTITION = 60 * 60 * 24 * 15; // 15 days
+  const uint32_t TIME_REPARTITION = 60 * 60 * 24 * 15;       // 15 days
   const uint32_t TIME_REPARTITION_WINDOW = 60 * 60 * 24 * 2; // 2 days
   const float CROSS_PARTITION_THRESHOLD =
-      0.1; // Threshold for when trigger repartition
+      0.05; // Threshold for when trigger repartition
 
-  const uint8_t PARTITIONING_MODE = PERIODIC_PARTITIONING;
+  const uint8_t PARTITIONING_MODE = DYNAMIC_PARTITIONING;
 
 public:
   idx_t METIS_OPTIONS[METIS_NOPTIONS];
   METIS_partitioner(const Graph &graph);
   uint32_t partition(idx_t nparts);
 
-  bool trigger_partitioning(uint32_t new_timestamp,
-                            bool last_edge_cross_partition);
+  bool trigger_partitioning(uint32_t new_timestamp, uint32_t cross_edge_access,
+                            uint32_t same_partition_edge_access);
 
   std::string get_name();
 

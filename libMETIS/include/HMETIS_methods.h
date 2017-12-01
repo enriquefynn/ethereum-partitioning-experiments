@@ -34,7 +34,7 @@ class HMETIS_partitioner : public Partitioner {
   const float CROSS_PARTITION_THRESHOLD =
       0.1; // Threshold for when trigger repartition
 
-  const uint8_t PARTITIONING_MODE = PERIODIC_PARTITIONING;
+  const uint8_t PARTITIONING_MODE = DYNAMIC_PARTITIONING;
 
   std::map<std::set<uint32_t>, uint32_t> m_hGraph;
   int m_eind_size = 0;
@@ -45,8 +45,8 @@ public:
   HMETIS_partitioner(const Graph &graph);
   uint32_t partition(int nparts);
 
-  bool trigger_partitioning(uint32_t new_timestamp,
-                            bool last_edge_cross_partition);
+  bool trigger_partitioning(uint32_t new_timestamp, uint32_t cross_edge_access,
+                            uint32_t same_partition_edge_access);
 
   void assign_partition(const std::set<uint32_t> &vertex_list, int32_t nparts);
 

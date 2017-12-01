@@ -6,19 +6,19 @@
 #include <utils.h>
 
 bool FB_partitioner::trigger_partitioning(uint32_t new_timestamp,
-                                          bool last_edge_cross_partition) {
+                                          uint32_t cross_edge_access,
+                                          uint32_t same_partition_edge_access) {
   if (PARTITIONING_MODE == DYNAMIC_PARTITIONING) {
-    ++total_calls;
-    cross_partition_calls += last_edge_cross_partition;
+    cross_partition_calls += static_cast<float>(cross_edge_access);
+    total_calls +=
+        static_cast<float>(cross_edge_access + same_partition_edge_access);
     if (new_timestamp - timestamp_last_check > TIME_REPARTITION_WINDOW) {
-
       if (new_timestamp - timestamp_last_repartition > TIME_REPARTITION) {
         if ((cross_partition_calls / total_calls) > CROSS_PARTITION_THRESHOLD) {
           timestamp_last_repartition = new_timestamp;
           return true;
         }
       }
-
       cross_partition_calls = 0;
       total_calls = 0;
       timestamp_last_check = new_timestamp;
@@ -30,12 +30,12 @@ bool FB_partitioner::trigger_partitioning(uint32_t new_timestamp,
       return true;
     }
     return false;
-  } else
+  } else {
     assert(false);
+  }
 }
 
-std::vector<uint32_t>
-FB_partitioner::get_neighbors() {
+std::vector<uint32_t> FB_partitioner::get_neighbors() {
 
   out_edge_it edg_it, edg_it_end;
   Edge ed;
@@ -66,16 +66,11 @@ FB_partitioner::get_neighbors() {
 
 uint32_t FB_partitioner::partition(int32_t nparts) {
   auto where_to_go = get_neighbors();
-  
-
-
 
   m_partitioning = std::vector<int32_t>(boost::num_vertices(m_graph), 0);
 
-
   auto old_partitioning = std::move(m_partitioning);
   return calculate_movements_repartition(old_partitioning, nparts);
-  
 };
 
 // Hash partitioning for new vertexes
@@ -94,6 +89,6 @@ std::string FB_partitioner::get_name() {
           : "DYNAMIC_" + threshold + "_WINDOW_" +
                 std::to_string(TIME_REPARTITION_WINDOW) + "_";
 
-  return "FACEBOOK_" + partitioning_mode + "repart_" + std::to_string(TIME_REPARTITION) + "_seed_" +
-         std::to_string(m_seed);
+  return "FACEBOOK_" + partitioning_mode + "repart_" +
+         std::to_string(TIME_REPARTITION) + "_seed_" + std::to_string(m_seed);
 }

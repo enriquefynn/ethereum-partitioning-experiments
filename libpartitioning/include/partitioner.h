@@ -18,7 +18,8 @@ public:
 
   virtual uint32_t partition(int32_t n_part) = 0;
   virtual bool trigger_partitioning(uint32_t new_timestamp,
-                                    bool last_edge_cross_partition) = 0;
+                                    uint32_t cross_edge_access,
+                                    uint32_t same_partition_edge_access) = 0;
   virtual std::string get_name() = 0;
 
   virtual void assign_partition(const std::set<uint32_t> &vertex_list,

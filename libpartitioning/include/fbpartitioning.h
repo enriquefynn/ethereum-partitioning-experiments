@@ -31,8 +31,8 @@ public:
 
   uint32_t partition(int32_t nparts);
 
-  bool trigger_partitioning(uint32_t new_timestamp,
-                            bool last_edge_cross_partition);
+  bool trigger_partitioning(uint32_t new_timestamp, uint32_t cross_edge_access,
+                          uint32_t same_partition_edge_access);
 
   std::string get_name();
 };

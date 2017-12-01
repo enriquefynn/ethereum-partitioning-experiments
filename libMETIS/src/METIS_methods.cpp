@@ -75,20 +75,20 @@ uint32_t METIS_partitioner::partition(idx_t nparts) {
   return calculate_movements_repartition(old_partitioning, nparts);
 }
 
-bool METIS_partitioner::trigger_partitioning(uint32_t new_timestamp,
-                                             bool last_edge_cross_partition) {
+bool METIS_partitioner::trigger_partitioning(
+    uint32_t new_timestamp, uint32_t cross_edge_access,
+    uint32_t same_partition_edge_access) {
   if (PARTITIONING_MODE == DYNAMIC_PARTITIONING) {
-    ++total_calls;
-    cross_partition_calls += last_edge_cross_partition;
+    cross_partition_calls += static_cast<float>(cross_edge_access);
+    total_calls +=
+        static_cast<float>(cross_edge_access + same_partition_edge_access);
     if (new_timestamp - timestamp_last_check > TIME_REPARTITION_WINDOW) {
-
       if (new_timestamp - timestamp_last_repartition > TIME_REPARTITION) {
         if ((cross_partition_calls / total_calls) > CROSS_PARTITION_THRESHOLD) {
           timestamp_last_repartition = new_timestamp;
           return true;
         }
       }
-
       cross_partition_calls = 0;
       total_calls = 0;
       timestamp_last_check = new_timestamp;
@@ -100,8 +100,9 @@ bool METIS_partitioner::trigger_partitioning(uint32_t new_timestamp,
       return true;
     }
     return false;
-  } else
+  } else {
     assert(false);
+  }
 }
 
 std::string METIS_partitioner::get_name() {
@@ -112,9 +113,9 @@ std::string METIS_partitioner::get_name() {
 
   std::string METIS_mode =
       "METIS_" + ((PARTITIONING_MODE == PERIODIC_PARTITIONING)
-          ? "PERIODIC_"
-          : "DYNAMIC_" + threshold + "_WINDOW_" +
-                std::to_string(TIME_REPARTITION_WINDOW) + "_");
+                      ? "PERIODIC_"
+                      : "DYNAMIC_" + threshold + "_WINDOW_" +
+                            std::to_string(TIME_REPARTITION_WINDOW) + "_");
 
   return METIS_mode + "repart_" + std::to_string(TIME_REPARTITION) + "_seed_" +
          std::to_string(METIS_SEED);

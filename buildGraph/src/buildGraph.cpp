@@ -8,12 +8,12 @@
 
 #include <metis.h>
 
-#include <METIS_methods.h>
 #include <HMETIS_methods.h>
+#include <METIS_methods.h>
+#include <config.h>
 #include <fbpartitioning.h>
 #include <hash_partitioning.h>
 #include <utils.h>
-#include <config.h>
 
 using namespace std;
 
@@ -61,9 +61,8 @@ int main(int argc, char **argv) {
   uint32_t lineN, timestamp_log, new_timestamp;
   uint32_t from_vertex, to_vertex, weight;
 
-  uint32_t total_edge_access, cross_edge_access;
-  bool last_edge_cross_partition = false;
-  total_edge_access = cross_edge_access = 0;
+  uint32_t cross_edge_access, same_partition_edge_access;
+  same_partition_edge_access = cross_edge_access = 0;
 
   lineN = timestamp_log = 0;
   vector<string> tokens;
@@ -97,8 +96,8 @@ int main(int argc, char **argv) {
       new_timestamp = stoi(tokens[2]);
       if (!timestamp_log)
         timestamp_log = new_timestamp;
-      if (partitioner->trigger_partitioning(new_timestamp,
-                                            last_edge_cross_partition)) {
+      if (partitioner->trigger_partitioning(new_timestamp, cross_edge_access,
+                                            same_partition_edge_access)) {
         // Partition the graph
         uint32_t movements_to_repartition =
             partitioner->partition(N_PARTITIONS);
@@ -119,14 +118,12 @@ int main(int argc, char **argv) {
       }
       assert(new_timestamp >= timestamp_log);
       if (new_timestamp - timestamp_log > TIME_GAP_LOG) {
-        assert(total_edge_access >= cross_edge_access);
         stats_file << "POINT " << cross_edge_access << ' '
-                   << (total_edge_access - cross_edge_access) << ' '
-                   << new_timestamp << ' ';
+                   << same_partition_edge_access << ' ' << new_timestamp << ' ';
         for (int i = 0; i < N_PARTITIONS; ++i)
           stats_file << partitioner->m_balance[i] << ' ';
         stats_file << endl;
-        total_edge_access = cross_edge_access = 0;
+        same_partition_edge_access = cross_edge_access = 0;
         timestamp_log = new_timestamp;
       }
       break;
@@ -172,12 +169,10 @@ int main(int argc, char **argv) {
       }
       partitioner->assign_partition(involved_vertices, N_PARTITIONS);
       for (const auto &edge : involved_edges) {
-        ++total_edge_access;
         if (!partitioner->same_partition(edge.first, edge.second)) {
           ++cross_edge_access;
-          last_edge_cross_partition = true;
         } else {
-          last_edge_cross_partition = false;
+          ++same_partition_edge_access;
         }
       }
       break;
