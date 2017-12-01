@@ -3,6 +3,7 @@
 #include <iterator>
 
 #include <fbpartitioning.h>
+#include <utils.h>
 
 bool FB_partitioner::trigger_partitioning(uint32_t new_timestamp,
                                           bool last_edge_cross_partition) {
@@ -80,24 +81,7 @@ uint32_t FB_partitioner::partition(int32_t nparts) {
 // Hash partitioning for new vertexes
 void FB_partitioner::assign_partition(const std::set<uint32_t> &vertex_list,
                                       int32_t nparts) {
-  auto needs_partitioning = vertex_list.end();
-  uint32_t best_partition;
-  for (auto vertex = vertex_list.begin(); vertex != vertex_list.end();
-       ++vertex) {
-    if (*vertex >= m_partitioning.size()) {
-      needs_partitioning = vertex;
-      break;
-    }
-  }
-
-  for (auto vertex = needs_partitioning; vertex != vertex_list.end();
-       ++vertex) {
-    best_partition = (*vertex % nparts);
-    assert(*vertex == m_partitioning.size());
-    // Cannot find good partition to put
-    m_partitioning.push_back(best_partition);
-    ++m_balance[best_partition];
-  }
+  Utils::assign_hash_partition(m_partitioning, m_balance, vertex_list, nparts);
 }
 
 std::string FB_partitioner::get_name() {

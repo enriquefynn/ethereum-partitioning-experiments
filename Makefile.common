@@ -18,8 +18,8 @@ INCDIR  = $(THISDIR)/include -I /home/fynn/.local/include
 
 ## Implicit Section: change the following only when necessary.
 CXX      = clang++ 
-C14FLAGS = -std=c++14 -stdlib=libc++ 
-CXXFLAGS = -g -O2 -fPIC -Wall $(C14FLAGS)
+C11FLAGS = -std=c++11 -stdlib=libc++ 
+CXXFLAGS = -g -O2 -fPIC -Wall $(C11FLAGS)
 SRCDIRS  = $(shell find $(SRCDIR) -type d)
 INCFLAGS = -I $(INCDIR) $(INCLUDES)
 
@@ -32,7 +32,7 @@ DEPS    = $(OBJS:.o=.d)
 ## Define some useful variables.
 CDP = clang++
 DEP_OPT = -MM -MP
-DEPEND  = $(CDP) $(CPPFLAGS) $(C14FLAGS) $(INCFLAGS) $(DEP_OPT)
+DEPEND  = $(CDP) $(CPPFLAGS) $(C11FLAGS) $(INCFLAGS) $(DEP_OPT)
 COMPILE = $(CXX) $(CPPFLAGS) $(CXXFLAGS) $(INCFLAGS) 
 LINK    = $(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS)
 

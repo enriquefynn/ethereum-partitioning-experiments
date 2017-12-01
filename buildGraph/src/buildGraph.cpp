@@ -6,9 +6,6 @@
 #include <unordered_set>
 #include <vector>
 
-#include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/graph_traits.hpp>
-
 #include <metis.h>
 
 #include <METIS_methods.h>
@@ -96,7 +93,7 @@ int main(int argc, char **argv) {
       if (processing_genesis) {
         partitioner->assign_partition(involved_vertices, N_PARTITIONS);
         processing_genesis = false;
-      } 
+      }
       new_timestamp = stoi(tokens[2]);
       if (!timestamp_log)
         timestamp_log = new_timestamp;
