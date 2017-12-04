@@ -22,7 +22,7 @@ class METIS_partitioner : public Partitioner {
   const float CROSS_PARTITION_THRESHOLD =
       0.05; // Threshold for when trigger repartition
 
-  const uint8_t PARTITIONING_MODE = DYNAMIC_PARTITIONING;
+  const uint8_t PARTITIONING_MODE = PERIODIC_PARTITIONING;
 
 public:
   idx_t METIS_OPTIONS[METIS_NOPTIONS];
