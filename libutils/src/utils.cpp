@@ -1,7 +1,8 @@
-#include <set>
-#include <cassert>
 #include "utils.h"
+#include <cassert>
+#include <set>
 
+#include <iostream>
 namespace Utils {
 void assign_hash_partition(std::vector<int32_t> &partitioning,
                            std::vector<uint32_t> &balance,
@@ -26,4 +27,16 @@ void assign_hash_partition(std::vector<int32_t> &partitioning,
     ++balance[best_partition];
   }
 }
+
+void add_edge_or_update_weigth(uint32_t from, uint32_t to, int weight, Graph &g) {
+  boost::add_edge(from, to, 0, g);
+  std::pair<Edge, bool> ed = boost::edge(from, to, g);
+  uint32_t prev_weight = boost::get(boost::edge_weight_t(), g, ed.first);
+  boost::put(boost::edge_weight_t(), g, ed.first, prev_weight + weight);
+}
+void remove_vertex(uint32_t from, Graph &g, Partitioner *p) {
+  boost::clear_vertex(from, g);
+  p->remove_vertex(from);
+}
+
 } // namespace Utils

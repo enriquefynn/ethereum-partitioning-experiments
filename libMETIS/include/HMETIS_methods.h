@@ -37,6 +37,7 @@ class HMETIS_partitioner : public Partitioner {
   const uint8_t PARTITIONING_MODE = PERIODIC_PARTITIONING;
 
   std::map<std::set<uint32_t>, uint32_t> m_hGraph;
+  std::set<uint32_t> m_deleted_vertices;
   int m_eind_size = 0;
 
 public:
@@ -49,6 +50,7 @@ public:
                             uint32_t same_partition_edge_access);
 
   void assign_partition(const std::set<uint32_t> &vertex_list, int32_t nparts);
+  void remove_vertex(uint32_t vtx);
 
   std::string get_name();
 

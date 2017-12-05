@@ -17,13 +17,6 @@
 
 using namespace std;
 
-void add_edge_or_update_weigth(int from, int to, int weight, Graph &g) {
-  boost::add_edge(from, to, 0, g);
-  std::pair<Edge, bool> ed = boost::edge(from, to, g);
-  uint32_t prev_weight = boost::get(boost::edge_weight_t(), g, ed.first);
-  boost::put(boost::edge_weight_t(), g, ed.first, prev_weight + weight);
-}
-
 int main(int argc, char **argv) {
   Graph g;
   Config config = Config(argv[2]);
@@ -85,7 +78,7 @@ int main(int argc, char **argv) {
       to_vertex = stoi(tokens[1]);
       involved_vertices.insert(0);
       involved_vertices.insert(to_vertex);
-      add_edge_or_update_weigth(0, to_vertex, 1, g);
+      Utils::add_edge_or_update_weigth(0, to_vertex, 1, g);
       break;
     }
     case 'B': {
@@ -133,6 +126,7 @@ int main(int argc, char **argv) {
       involved_vertices.clear();
       vector<pair<uint32_t, uint32_t>> involved_edges;
       uint32_t author = stoi(tokens[1]);
+      bool tx_failed = stoi(tokens[2]);
       involved_vertices.insert(author);
       // tokens[1] : from
       int i = 3, type;
@@ -151,7 +145,7 @@ int main(int argc, char **argv) {
             from_vertex = stoi(tokens[++i]);
             to_vertex = stoi(tokens[++i]);
           }
-          if (type <= 2) {
+          if (Utils::has_value(type)) {
             ++i;
             // value
           }
@@ -160,10 +154,17 @@ int main(int argc, char **argv) {
           weight = stoi(tokens[i]);
 
           // ADD edge
-          add_edge_or_update_weigth(from_vertex, to_vertex, weight, g);
-          involved_vertices.insert(from_vertex);
-          involved_vertices.insert(to_vertex);
-          involved_edges.push_back({from_vertex, to_vertex});
+          if (Utils::is_selfdestruct(type) && !tx_failed) {
+            // From: contract that was suicided
+            // To: Funds moved there
+            Utils::remove_vertex(from_vertex, g, partitioner);
+            involved_vertices.insert(to_vertex);
+          } else {
+            Utils::add_edge_or_update_weigth(from_vertex, to_vertex, weight, g);
+            involved_vertices.insert(from_vertex);
+            involved_vertices.insert(to_vertex);
+            involved_edges.push_back({from_vertex, to_vertex});
+          }
           ++i;
         }
       }

@@ -24,15 +24,18 @@ public:
 
   virtual void assign_partition(const std::set<uint32_t> &vertex_list,
                                 int32_t nparts);
-  uint32_t
+
+  virtual void remove_vertex(uint32_t vtx) { --m_balance[m_partitioning[vtx]]; }
+
+  const uint32_t
   calculate_movements_repartition(const std::vector<int32_t> &old_partitioning,
-                                  int32_t nparts);
+                                  int32_t nparts) const;
 
   // Edges cut, vertices in each partitioning partitioning.size()
-  std::tuple<uint32_t, std::vector<uint32_t>>
+  const std::tuple<uint32_t, std::vector<uint32_t>>
   calculate_edge_cut(const Graph &g);
 
-  inline bool same_partition(uint32_t v1, uint32_t v2) {
+  inline bool same_partition(uint32_t v1, uint32_t v2) const {
     return m_partitioning[v1] == m_partitioning[v2];
   }
 };

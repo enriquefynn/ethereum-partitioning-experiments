@@ -26,7 +26,7 @@ class FB_partitioner : public Partitioner {
   std::vector<uint32_t> get_neighbors();
 
 public:
-  FB_partitioner(const Graph &graph) : Partitioner(0, graph) {}
+  FB_partitioner(const Graph &graph);
   void assign_partition(const std::set<uint32_t> &vertex_list, int32_t nparts);
 
   uint32_t partition(int32_t nparts);

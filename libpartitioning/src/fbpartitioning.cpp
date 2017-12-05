@@ -5,6 +5,11 @@
 #include <fbpartitioning.h>
 #include <utils.h>
 
+FB_partitioner::FB_partitioner(const Graph &graph) : Partitioner(0, graph) {
+  
+
+}
+
 bool FB_partitioner::trigger_partitioning(uint32_t new_timestamp,
                                           uint32_t cross_edge_access,
                                           uint32_t same_partition_edge_access) {

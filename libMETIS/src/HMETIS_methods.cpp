@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cassert>
 #include <cstdlib>
 #include <fstream>
@@ -55,6 +56,23 @@ uint32_t HMETIS_partitioner::partition(int nparts) {
 
   std::ofstream hmetis_ex("/tmp/hmetis_file.hgr");
   hmetis_ex << nhedges << ' ' << nvtxs << std::endl;
+
+  // Remove vertices stated to removal
+  for (const auto &hedge : m_hGraph) {
+    std::vector<uint32_t> intersection;
+    std::set_intersection(m_deleted_vertices.begin(), m_deleted_vertices.end(),
+                          hedge.first.begin(), hedge.first.end(),
+                          std::back_inserter(intersection));
+    if (intersection.size() > 0) {
+      auto new_hedge = std::set<uint32_t>(hedge.first);
+      for (const auto &remove_vtx : intersection) {
+        new_hedge.erase(remove_vtx);
+      }
+      m_hGraph[new_hedge] = hedge.second;
+    }
+  }
+  m_deleted_vertices.clear();
+
   for (const auto &hedge : m_hGraph) {
     // hewgts[v_idx - 1] = hedge.second;
     for (const auto &vtx : hedge.first) {
@@ -176,7 +194,6 @@ bool HMETIS_partitioner::trigger_partitioning(
 void HMETIS_partitioner::assign_partition(const std::set<uint32_t> &vertex_list,
                                           int32_t nparts) {
   Partitioner::assign_partition(vertex_list, nparts);
-
   // Build graph for HMETIS
   auto hedge = m_hGraph.find(vertex_list);
   if (hedge == m_hGraph.end()) {
@@ -200,4 +217,9 @@ std::string HMETIS_partitioner::get_name() {
 
   return METIS_mode + "repart_" + std::to_string(TIME_REPARTITION) + "_seed_" +
          std::to_string(METIS_SEED);
+}
+
+void HMETIS_partitioner::remove_vertex(uint32_t vtx) {
+  Partitioner::remove_vertex(vtx);
+  m_deleted_vertices.insert(vtx);
 }

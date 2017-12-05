@@ -37,8 +37,8 @@ void Partitioner::assign_partition(const std::set<uint32_t> &vertex_list,
   }
 }
 
-uint32_t Partitioner::calculate_movements_repartition(
-    const std::vector<int32_t> &old_partitioning, int32_t nparts) {
+const uint32_t Partitioner::calculate_movements_repartition(
+    const std::vector<int32_t> &old_partitioning, int32_t nparts) const {
 
   uint32_t moves = 0;
   const size_t new_partitioning_size = m_partitioning.size();
@@ -52,7 +52,7 @@ uint32_t Partitioner::calculate_movements_repartition(
   return moves;
 }
 
-std::tuple<uint32_t, std::vector<uint32_t>>
+const std::tuple<uint32_t, std::vector<uint32_t>>
 Partitioner::calculate_edge_cut(const Graph &g) {
   typename GraphTraits::edge_iterator ei, ei_end;
   uint32_t edges_cut = 0;
