@@ -67,6 +67,7 @@ int main(int argc, char **argv) {
 
   set<uint32_t> involved_vertices;
   vector<pair<uint32_t, uint32_t>> involved_edges;
+  vector<uint32_t> delete_vertices;
 
   // Genesis processing
   uint32_t n_transactions;
@@ -82,8 +83,8 @@ int main(int argc, char **argv) {
 
   while (calls_file >> header >> block_number >> new_timestamp >>
          n_transactions) {
-
     assert(header == 'B');
+
     if (!timestamp_log)
       timestamp_log = new_timestamp;
 
@@ -106,7 +107,7 @@ int main(int argc, char **argv) {
         stats_file << balance[i] << ' ';
       stats_file << endl;
     }
-
+    
     assert(new_timestamp >= timestamp_log);
     if (new_timestamp - timestamp_log > TIME_GAP_LOG) {
       stats_file << "POINT " << cross_edge_access << ' '
@@ -117,12 +118,13 @@ int main(int argc, char **argv) {
       same_partition_edge_access = cross_edge_access = 0;
       timestamp_log = new_timestamp;
     }
-
+    
     for (int tx = 0; tx < n_transactions; ++tx) {
       calls_file >> header >> tx_author >> tx_failed >> tx_types_size;
       assert(header == 'T');
       involved_vertices.clear();
       involved_edges.clear();
+      delete_vertices.clear();
 
       for (int tx_n_type = 0; tx_n_type < tx_types_size; ++tx_n_type) {
         calls_file >> tx_type >> tx_type_n;
@@ -139,9 +141,16 @@ int main(int argc, char **argv) {
           if (has_value)
             calls_file >> tx_value;
           calls_file >> weight;
-          Utils::add_edge_or_update_weigth(from_vertex, to_vertex, weight, g);
           involved_vertices.insert(from_vertex);
           involved_vertices.insert(to_vertex);
+          if (Utils::is_selfdestruct(tx_type) && !tx_failed) {
+            // From: contract that was suicided
+            // To: Funds moved there
+            // Utils::remove_vertex(from_vertex, g, partitioner);
+            delete_vertices.push_back(from_vertex);
+            continue;
+          }
+          Utils::add_edge_or_update_weigth(from_vertex, to_vertex, weight, g);
           involved_edges.push_back({from_vertex, to_vertex});
         }
         partitioner->assign_partition(involved_vertices, N_PARTITIONS);

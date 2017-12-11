@@ -3,15 +3,14 @@
 #include <config.h>
 #include <set>
 #include <vector>
-
+#include <iostream>
 class Partitioner {
 protected:
   const int32_t m_seed;
   const Graph &m_graph;
-  
 
 public:
-std::vector<int32_t> m_partitioning;
+  std::vector<uint32_t> m_partitioning;
   std::vector<uint32_t> m_balance;
   Partitioner(int32_t seed, const Graph &graph)
       : m_seed(seed), m_graph(graph), m_partitioning(0),
@@ -26,6 +25,11 @@ std::vector<int32_t> m_partitioning;
   virtual void assign_partition(const std::set<uint32_t> &vertex_list,
                                 int32_t nparts);
 
+  virtual void define_partitioning(std::vector<uint32_t> &&new_partitioning) {
+    assert(new_partitioning.size() == boost::num_vertices(m_graph));
+    m_partitioning = std::move(new_partitioning);
+  }
+
   virtual void remove_vertex(uint32_t vtx) {
     assert(vtx < m_partitioning.size());
     assert(m_partitioning[vtx] < N_PARTITIONS);
@@ -35,7 +39,7 @@ std::vector<int32_t> m_partitioning;
   }
 
   const uint32_t
-  calculate_movements_repartition(const std::vector<int32_t> &old_partitioning,
+  calculate_movements_repartition(const std::vector<uint32_t> &old_partitioning,
                                   int32_t nparts) const;
 
   // Edges cut, vertices in each partitioning partitioning.size()

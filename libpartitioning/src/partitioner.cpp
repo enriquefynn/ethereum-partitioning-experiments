@@ -38,7 +38,7 @@ void Partitioner::assign_partition(const std::set<uint32_t> &vertex_list,
 }
 
 const uint32_t Partitioner::calculate_movements_repartition(
-    const std::vector<int32_t> &old_partitioning, int32_t nparts) const {
+    const std::vector<uint32_t> &old_partitioning, int32_t nparts) const {
 
   uint32_t moves = 0;
   const size_t new_partitioning_size = m_partitioning.size();

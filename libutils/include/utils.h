@@ -17,7 +17,7 @@
 #define OPSELFDESTRUCT_TYPE 6
 
 namespace Utils {
-void assign_hash_partition(std::vector<int32_t> &partitioning,
+void assign_hash_partition(std::vector<uint32_t> &partitioning,
                            std::vector<uint32_t> &balance,
                            const std::set<uint32_t> &vertex_list,
                            int32_t nparts);

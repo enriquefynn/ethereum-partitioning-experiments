@@ -6,6 +6,7 @@ all:
 	make -C libpartitioning all
 	make -C libMETIS all
 	make -C buildGraph all
+	make -C test all
 
 clean:
 	make -C libutils clean
@@ -13,6 +14,7 @@ clean:
 	make -C libpartitioning clean
 	make -C libMETIS clean
 	make -C buildGraph clean
+	make -C test clean
 
 
 # INCLUDE=/home/fynn/.local/include

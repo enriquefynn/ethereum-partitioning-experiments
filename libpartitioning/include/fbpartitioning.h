@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vector>
 #include <iomanip>
+#include <vector>
 
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graph_traits.hpp>
@@ -23,16 +23,20 @@ class FB_partitioner : public Partitioner {
 
   const uint8_t PARTITIONING_MODE = PERIODIC_PARTITIONING;
 
-  std::vector<uint32_t> get_neighbors();
-
+  std::vector<uint32_t> get_neighbors(uint32_t n_partitions);
+  
 public:
+  std::vector<std::vector<double>>
+  get_oracle_matrix(uint32_t n_partitions);
+
+
   FB_partitioner(const Graph &graph);
   void assign_partition(const std::set<uint32_t> &vertex_list, int32_t nparts);
 
-  uint32_t partition(int32_t nparts);
+  uint32_t partition(int32_t n_partitions);
 
   bool trigger_partitioning(uint32_t new_timestamp, uint32_t cross_edge_access,
-                          uint32_t same_partition_edge_access);
+                            uint32_t same_partition_edge_access);
 
   std::string get_name();
 };
