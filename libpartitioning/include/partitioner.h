@@ -8,9 +8,10 @@ class Partitioner {
 protected:
   const int32_t m_seed;
   const Graph &m_graph;
-  std::vector<int32_t> m_partitioning;
+  
 
 public:
+std::vector<int32_t> m_partitioning;
   std::vector<uint32_t> m_balance;
   Partitioner(int32_t seed, const Graph &graph)
       : m_seed(seed), m_graph(graph), m_partitioning(0),
@@ -25,7 +26,13 @@ public:
   virtual void assign_partition(const std::set<uint32_t> &vertex_list,
                                 int32_t nparts);
 
-  virtual void remove_vertex(uint32_t vtx) { --m_balance[m_partitioning[vtx]]; }
+  virtual void remove_vertex(uint32_t vtx) {
+    assert(vtx < m_partitioning.size());
+    assert(m_partitioning[vtx] < N_PARTITIONS);
+    assert(m_balance[m_partitioning[vtx]] > 0);
+    --m_balance[m_partitioning[vtx]];
+    m_partitioning[vtx] = N_PARTITIONS;
+  }
 
   const uint32_t
   calculate_movements_repartition(const std::vector<int32_t> &old_partitioning,

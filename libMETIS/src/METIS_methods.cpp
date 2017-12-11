@@ -66,6 +66,7 @@ uint32_t METIS_partitioner::partition(idx_t nparts) {
   assert(return_METIS == METIS_OK);
 
   auto old_partitioning = std::move(m_partitioning);
+  assert(m_partitioning.size() == 0);
   m_partitioning = std::vector<idx_t>(part, part + nvtxs);
 
   free(xadj);

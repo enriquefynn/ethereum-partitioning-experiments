@@ -43,7 +43,6 @@ const uint32_t Partitioner::calculate_movements_repartition(
   uint32_t moves = 0;
   const size_t new_partitioning_size = m_partitioning.size();
   const size_t old_partitioning_size = old_partitioning.size();
-
   assert(new_partitioning_size == old_partitioning_size);
 
   for (size_t i = 0; i < old_partitioning_size; ++i)

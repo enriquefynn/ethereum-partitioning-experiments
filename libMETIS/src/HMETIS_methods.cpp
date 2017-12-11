@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <iomanip>
-
+#include <unordered_map>
 #include <metis.h>
 
 #include <HMETIS_methods.h>
@@ -35,54 +35,47 @@ uint32_t HMETIS_partitioner::partition(int nparts) {
                             "-ufactor=" +
                             std::to_string(METIS_UBFACTOR) + " ";
 
-  // out_edge_it edg_it, edg_it_end;
-  // Edge ed;
-  // // void partition_METIS(Graph &g, int nparts) {
-  // std::pair<vertex_it, vertex_it> vertex;
-
   int nvtxs = boost::num_vertices(m_graph);
   int nhedges = m_hGraph.size();
-  // if (!nvtxs)
-  //   assert(false);
-  // int *eptr = (int *)malloc((nhedges + 1) * sizeof(int));
-  // int *eind = (int *)malloc((m_eind_size) * sizeof(int));
-  // int *hewgts = (int *)malloc((nhedges) * sizeof(int));
-  // int *part = (int *)malloc(nvtxs * sizeof(int));
-
-  // int edge_idx = 0;
-  // int edge_cut;
-  // eptr[0] = 0;
-  // int32_t v_idx = 1;
 
   std::ofstream hmetis_ex("/tmp/hmetis_file.hgr");
   hmetis_ex << nhedges << ' ' << nvtxs << std::endl;
 
   // Remove vertices stated to removal
-  for (const auto &hedge : m_hGraph) {
+  for (auto hedge_it = m_hGraph.begin(); hedge_it != m_hGraph.end();
+       ++hedge_it) {
     std::vector<uint32_t> intersection;
     std::set_intersection(m_deleted_vertices.begin(), m_deleted_vertices.end(),
-                          hedge.first.begin(), hedge.first.end(),
+                          (*hedge_it).first.begin(), (*hedge_it).first.end(),
                           std::back_inserter(intersection));
     if (intersection.size() > 0) {
-      auto new_hedge = std::set<uint32_t>(hedge.first);
+      auto new_hedge = std::set<uint32_t>((*hedge_it).first);
       for (const auto &remove_vtx : intersection) {
         new_hedge.erase(remove_vtx);
       }
-      m_hGraph[new_hedge] = hedge.second;
+      if (new_hedge.size() == 0) {
+        m_hGraph.erase(hedge_it);
+      } else {
+        m_hGraph[new_hedge] = (*hedge_it).second;
+      }
     }
   }
   m_deleted_vertices.clear();
 
+  std::unordered_map<uint32_t, uint32_t> to_metis_vtx;
+  uint32_t next_id = 1;
+  auto get_metis_id = [&](uint32_t vtx) {
+    if (to_metis_vtx.count(vtx) == 0) {
+      to_metis_vtx[vtx] = next_id++;
+    }
+    return to_metis_vtx[vtx];
+  };
+
   for (const auto &hedge : m_hGraph) {
-    // hewgts[v_idx - 1] = hedge.second;
     for (const auto &vtx : hedge.first) {
-      hmetis_ex << vtx + 1 << ' ';
-      // eind[edge_idx] = vtx;
-      // ++edge_idx;
+      hmetis_ex << get_metis_id(vtx) << ' ';
     }
     hmetis_ex << std::endl;
-    // eptr[v_idx] = edge_idx;
-    // ++v_idx;
   }
   std::string call_command = "hmetis " + hmetis_args + "/tmp/hmetis_file.hgr ";
   call_command += std::to_string(nparts);
@@ -94,70 +87,16 @@ uint32_t HMETIS_partitioner::partition(int nparts) {
   std::ifstream hmetis_res("/tmp/hmetis_file.hgr.part." +
                            std::to_string(nparts));
 
-  // std::cout << "EITA" << std::endl;
-  // std::cout << "nvtxs: " << nvtxs << std::endl;
-  // std::cout << "Hedges: " << nhedges << std::endl;
-  // std::cout << "m_eind_size: " << m_eind_size << std::endl;
-  // std::cout << "vidx: " << v_idx << std::endl;
-  // std::cout << "edge_idx: " << edge_idx << std::endl;
-
-  // clock_t begin = clock();
-
-  // std::cout << "eptr: ";
-  // for (int i = 0; i < nhedges + 1; ++i)
-  //   std::cout << eptr[i] << ' ';
-  // std::cout << std::endl;
-  // std::cout << "eind: ";
-  // for (int i = 0; i < m_eind_size; ++i)
-  //   std::cout << eind[i] << ' ';
-  // std::cout << std::endl;
-
-  // std::cout << "hewgts: ";
-  // for (int i = 0; i < nhedges; ++i)
-  //   std::cout << hewgts[i] << ' ';
-  // std::cout << std::endl;
-
-  // nhedges = 1;
-  // nvtxs = 1000;
-  // int eptra[2] = {0, 1000};
-  // int einda[50];
-  // for (int i = 0; i < 1000; ++i)
-  //   einda[i] = i;
-
-  // std::cout << "------" << std::endl;
-
-  // HMETIS_PartRecursive(nvtxs,          // The number of vertices in the
-  // graph.
-  //                 nhedges,        // The number of hedges in the graph.
-  //                 NULL,           // The weights of the vertices
-  //                 eptr,          // The adjacency structure of the graph
-  //                 eind,          // The adjacency structure of the graph
-  //                 NULL,           // The weights of the edges
-  //                 nparts,         // The number of parts to partition the
-  //                 graph METIS_UBFACTOR, // UB factor METIS_OPTIONS,  // METIS
-  //                 options part,           // Partitioning &edge_cut       //
-  //                 Whatever
-  // );
-
-  // clock_t end = clock();
-  // std::cout << "Elapsed time: " << double(end - begin) / CLOCKS_PER_SEC
-  //           << std::endl;
-
   auto old_partitioning = std::move(m_partitioning);
   assert(m_partitioning.size() == 0);
-  m_partitioning = std::vector<int32_t>(nvtxs);
+  // m_partitioning = std::vector<int32_t>(nvtxs);
   int vtx_p;
   int vtx_id = 0;
   while (hmetis_res >> vtx_p) {
     m_partitioning[vtx_id++] = vtx_p;
   }
   assert(vtx_id == nvtxs);
-  // m_partitioning = std::vector<int>(part, part + nvtxs);
 
-  // free(eptr);
-  // free(eind);
-  // free(hewgts);
-  // free(part);
   return calculate_movements_repartition(old_partitioning, nparts);
 }
 
@@ -204,7 +143,6 @@ void HMETIS_partitioner::assign_partition(const std::set<uint32_t> &vertex_list,
 }
 
 std::string HMETIS_partitioner::get_name() {
-
   std::stringstream stream;
   stream << std::fixed << std::setprecision(2) << CROSS_PARTITION_THRESHOLD;
   std::string threshold = stream.str();
