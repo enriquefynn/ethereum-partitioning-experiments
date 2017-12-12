@@ -5,7 +5,8 @@
 #include <fbpartitioning.h>
 #include <utils.h>
 
-FB_partitioner::FB_partitioner(const Graph &graph) : Partitioner(0, graph) {}
+FB_partitioner::FB_partitioner(const Graph &graph)
+    : Partitioner(FACEBOOK_SEED, graph), m_gen(FACEBOOK_SEED) {}
 
 bool FB_partitioner::trigger_partitioning(uint32_t new_timestamp,
                                           uint32_t cross_edge_access,
@@ -95,13 +96,20 @@ std::vector<uint32_t> FB_partitioner::get_neighbors(uint32_t n_partitions) {
 std::vector<std::vector<double>>
 FB_partitioner::get_oracle_matrix(uint32_t n_partitions) {
   auto where_vtx_go = get_neighbors(n_partitions);
+
+  m_partition_vtx_to_move = std::vector<std::vector<std::vector<uint32_t>>>(
+      n_partitions, std::vector<std::vector<uint32_t>>(n_partitions));
+
   auto oracle_matrix = std::vector<std::vector<double>>(
       n_partitions, std::vector<double>(n_partitions, 0.));
 
   for (uint32_t vtx = 0; vtx < where_vtx_go.size(); ++vtx) {
     if (m_partitioning[vtx] != where_vtx_go[vtx]) {
       ++oracle_matrix[m_partitioning[vtx]][where_vtx_go[vtx]];
-      // partitions_go_to[m_partitioning[vtx]].push_back(where_vtx_go[vtx]);
+      m_partition_vtx_to_move[m_partitioning[vtx]][where_vtx_go[vtx]].push_back(
+          vtx);
+      // std::cout << "want to go from " << m_partitioning[vtx] << " to " <<
+      // where_vtx_go[vtx] << ": " << vtx << std::endl;
     }
   }
 
@@ -116,8 +124,7 @@ FB_partitioner::get_oracle_matrix(uint32_t n_partitions) {
       if (min_idx == false) {
         oracle_matrix[i][j] = oracle_matrix[j][i] / oracle_matrix[i][j];
         oracle_matrix[j][i] = 1;
-      }
-      else {
+      } else {
         oracle_matrix[j][i] = oracle_matrix[i][j] / oracle_matrix[j][i];
         oracle_matrix[i][j] = 1;
       }
@@ -128,34 +135,50 @@ FB_partitioner::get_oracle_matrix(uint32_t n_partitions) {
 }
 
 uint32_t FB_partitioner::partition(int32_t n_partitions) {
-  // std::vector<std::vector<uint32_t>> partitions_go_to(N_PARTITIONS,
-  //                                                     std::vector<uint32_t>());
+  uint32_t n_moves = 0;
+  auto oracle_matrix = get_oracle_matrix(n_partitions);
+  for (int i = 0; i < n_partitions - 1; ++i) {
+    for (int j = i + 1; j < n_partitions; ++j) {
+      if (oracle_matrix[i][j] > 0) {
+        // Move from i to j
+        for (const auto v : m_partition_vtx_to_move[i][j]) {
+          auto prob = m_dis(m_gen);
+          auto should_go = prob <= oracle_matrix[i][j];
+          if (should_go) {
+            ++n_moves;
+            // assert(m_partitioning[v] == 0);
+            // std::cout << "prob: " << prob << " MOVE from: " << m_partitioning[v]
+            //           << " to: " << j << std::endl;
+            m_partitioning[v] = j;
+          }
+        }
+      }
+      // Move from j to i
+      if (oracle_matrix[j][i] > 0) {
+        for (const auto v : m_partition_vtx_to_move[j][i]) {
+          auto prob = m_dis(m_gen);
+          auto should_go = prob <= oracle_matrix[j][i];
+          if (should_go) {
+            ++n_moves;
+            // assert(m_partitioning[v] == 0);
+            // std::cout << "prob: " << prob << " MOVE from: " << m_partitioning[v]
+            //           << " to: " << i << std::endl;
+            m_partitioning[v] = i;
+          }
+        }
+      }
+    }
+  }
 
-  // Build matrix
-  // uint32_t oracle_matrix[N_PARTITIONS][N_PARTITIONS];
-  // memset(oracle_matrix, 0, sizeof(uint32_t) * N_PARTITIONS * N_PARTITIONS);
-  // for (uint32_t vtx = 0; vtx < where_vtx_go.size(); ++vtx) {
-  //   if (m_partitioning[vtx] != where_vtx_go[vtx]) {
-  //     ++oracle_matrix[m_partitioning[vtx]][where_vtx_go[vtx]];
-  //     // partitions_go_to[m_partitioning[vtx]].push_back(where_vtx_go[vtx]);
-  //   }
-  // }
+  std::cout << "Oracle matrix: " << n_partitions << '\n';
+  for (int i = 0; i < n_partitions; ++i) {
+    for (int j = 0; j < n_partitions; ++j) {
+      std::cout << oracle_matrix[i][j] << ' ';
+    }
+    std::cout << std::endl;
+  }
 
-  // for (int i = 0; i < N_PARTITIONS; ++i) {
-  //   std::cout << "PARTITION " << i << ": ";
-  //   for (int j = 0; j < partitions_go_to[i].size(); ++j)
-
-  // }
-
-  // for (int i = 0; i < N_PARTITIONS; ++i) {
-  //   std::cout << "PARTITION " << i << ": ";
-  //   for (int j = 0; j < partitions_go_to[i].size(); ++j)
-  //     std::cout << partitions_go_to[i][j] << ' ';
-  //   std::cout << std::endl;
-  // }
-
-  get_oracle_matrix(n_partitions);
-  return 0;
+  return n_moves;
   // m_partitioning = std::vector<int32_t>(boost::num_vertices(m_graph), 0);
   // return 100;
   // auto old_partitioning = std::move(m_partitioning);

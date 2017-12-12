@@ -2,12 +2,12 @@
 
 #include <iomanip>
 #include <vector>
-
-#include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/graph_traits.hpp>
+#include <random>
 
 #include <config.h>
 #include <partitioner.h>
+
+#define FACEBOOK_SEED 0
 
 class FB_partitioner : public Partitioner {
 
@@ -20,10 +20,12 @@ class FB_partitioner : public Partitioner {
   const uint32_t TIME_REPARTITION_WINDOW = 60 * 60 * 24 * 2; // 2 days
   const float CROSS_PARTITION_THRESHOLD =
       0.3; // Threshold for when trigger repartition
-
   const uint8_t PARTITIONING_MODE = PERIODIC_PARTITIONING;
-
   std::vector<uint32_t> get_neighbors(uint32_t n_partitions);
+  std::vector<std::vector<std::vector<uint32_t>>> m_partition_vtx_to_move;
+  
+  std::mt19937 m_gen;
+  std::uniform_real_distribution<> m_dis;
   
 public:
   std::vector<std::vector<double>>

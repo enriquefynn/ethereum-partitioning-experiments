@@ -53,3 +53,15 @@ TEST_F(OracleTest, matrixTest) {
                                       {0, 1, 1, 0}});
   EXPECT_EQ(v, matrix);
 }
+
+TEST_F(OracleTest, testMoving) {
+  // Graph g;
+
+  auto fb_partitioner = FB_partitioner(*g);
+  fb_partitioner.define_partitioning(std::move(*partitioning));
+
+  auto matrix = fb_partitioner.partition(4);
+
+
+  // EXPECT_EQ(v, matrix);
+}
