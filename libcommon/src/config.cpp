@@ -19,8 +19,15 @@ Config::Config(const std::string &input_config) {
         PARTITIONING_MODE = HMETIS_PARTITIONER;
       else if (value == "FACEBOOK")
         PARTITIONING_MODE = FACEBOOK_PARTITIONER;
+      else if (value == "FILE")
+        PARTITIONING_MODE = FILE_PARTITIONER;
       else
         assert(false);
     }
+    else if (key == "FILEPATH") {
+      FILE_PATH = value;
+    }
+    else 
+      assert(false);
   }
 }

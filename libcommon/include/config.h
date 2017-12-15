@@ -25,8 +25,10 @@ public:
     HASH_PARTITIONER,
     METIS_PARTITIONER,
     HMETIS_PARTITIONER,
-    FACEBOOK_PARTITIONER
+    FACEBOOK_PARTITIONER,
+    FILE_PARTITIONER
   };
+  std::string FILE_PATH = "";
   uint8_t PARTITIONING_MODE = HASH_PARTITIONER;
   Config(const std::string &config_file);
 
