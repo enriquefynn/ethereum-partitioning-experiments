@@ -12,6 +12,7 @@
 #include <METIS_methods.h>
 #include <config.h>
 #include <fbpartitioning.h>
+#include <file_partitioning.h>
 #include <hash_partitioning.h>
 #include <utils.h>
 
@@ -25,19 +26,23 @@ int main(int argc, char **argv) {
   switch (config.PARTITIONING_MODE) {
   case config.HASH_PARTITIONER:
     cout << "Using Hash partitioner" << endl;
-    partitioner = new Hash_partitioner(g);
+    partitioner = new Hash_partitioner(g, config);
     break;
   case config.METIS_PARTITIONER:
     cout << "Using METIS partitioner" << endl;
-    partitioner = new METIS_partitioner(g);
+    partitioner = new METIS_partitioner(g, config);
     break;
   case config.HMETIS_PARTITIONER:
     cout << "Using Hyper-METIS partitioner" << endl;
-    partitioner = new HMETIS_partitioner(g);
+    partitioner = new HMETIS_partitioner(g, config);
     break;
   case config.FACEBOOK_PARTITIONER:
     cout << "Using Facebook partitioner" << endl;
-    partitioner = new FB_partitioner(g);
+    partitioner = new FB_partitioner(g, config);
+    break;
+  case config.FILE_PARTITIONER:
+    cout << "Using File partitioner" << endl;
+    partitioner = new File_partitioner(g, config);
     break;
 
   default:
@@ -91,8 +96,13 @@ int main(int argc, char **argv) {
     if (partitioner->trigger_partitioning(new_timestamp, cross_edge_access,
                                           same_partition_edge_access)) {
       // Partition the graph
+      auto before = std::chrono::high_resolution_clock::now();
       uint32_t movements_to_repartition = partitioner->partition(N_PARTITIONS);
-
+      auto time_to_partition =
+          std::chrono::duration_cast<std::chrono::milliseconds>(
+              (std::chrono::high_resolution_clock::now() - before))
+              .count();
+      cout << "Partitioning took: " << time_to_partition << "ms\n";
       // Calculate edge-cut / balance
       uint32_t edges_cut;
 
@@ -107,7 +117,7 @@ int main(int argc, char **argv) {
         stats_file << balance[i] << ' ';
       stats_file << endl;
     }
-    
+
     assert(new_timestamp >= timestamp_log);
     if (new_timestamp - timestamp_log > TIME_GAP_LOG) {
       stats_file << "POINT " << cross_edge_access << ' '
@@ -118,7 +128,7 @@ int main(int argc, char **argv) {
       same_partition_edge_access = cross_edge_access = 0;
       timestamp_log = new_timestamp;
     }
-    
+
     for (int tx = 0; tx < n_transactions; ++tx) {
       calls_file >> header >> tx_author >> tx_failed >> tx_types_size;
       assert(header == 'T');
@@ -151,6 +161,7 @@ int main(int argc, char **argv) {
             continue;
           }
           Utils::add_edge_or_update_weigth(from_vertex, to_vertex, weight, g);
+          // cout << "Add " << from_vertex << " to " << to_vertex << endl;
           involved_edges.push_back({from_vertex, to_vertex});
         }
         partitioner->assign_partition(involved_vertices, N_PARTITIONS);

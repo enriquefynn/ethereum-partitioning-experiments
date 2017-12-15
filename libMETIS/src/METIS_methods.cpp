@@ -4,9 +4,10 @@
 
 #include <METIS_methods.h>
 #include <partitioner.h>
+#include <utils.h>
 
-METIS_partitioner::METIS_partitioner(const Graph &graph)
-    : Partitioner(METIS_SEED, graph) {
+METIS_partitioner::METIS_partitioner(const Graph &graph, const Config &config)
+    : Partitioner(METIS_SEED, graph, config) {
   assert(m_seed > 0);
   METIS_SetDefaultOptions(METIS_OPTIONS);
   METIS_OPTIONS[METIS_OPTION_OBJTYPE] = METIS_OBJTYPE_VOL;
@@ -73,6 +74,8 @@ uint32_t METIS_partitioner::partition(idx_t nparts) {
   free(adjncy);
   free(adjwgt);
   free(part);
+  Utils::save_partitioning(m_partitioning, m_last_partitioning_time,
+                           m_config.FILE_PATH);
   return calculate_movements_repartition(old_partitioning, nparts);
 }
 
@@ -86,6 +89,7 @@ bool METIS_partitioner::trigger_partitioning(
     if (new_timestamp - timestamp_last_check > TIME_REPARTITION_WINDOW) {
       if (new_timestamp - timestamp_last_repartition > TIME_REPARTITION) {
         if ((cross_partition_calls / total_calls) > CROSS_PARTITION_THRESHOLD) {
+          m_last_partitioning_time = timestamp_last_repartition;
           timestamp_last_repartition = new_timestamp;
           return true;
         }
@@ -97,6 +101,7 @@ bool METIS_partitioner::trigger_partitioning(
     return false;
   } else if (PARTITIONING_MODE == PERIODIC_PARTITIONING) {
     if (new_timestamp - timestamp_last_repartition > TIME_REPARTITION) {
+      m_last_partitioning_time = timestamp_last_repartition;
       timestamp_last_repartition = new_timestamp;
       return true;
     }

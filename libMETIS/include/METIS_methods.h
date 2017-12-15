@@ -26,7 +26,7 @@ class METIS_partitioner : public Partitioner {
 
 public:
   idx_t METIS_OPTIONS[METIS_NOPTIONS];
-  METIS_partitioner(const Graph &graph);
+  METIS_partitioner(const Graph &graph, const Config &config);
   uint32_t partition(idx_t nparts);
 
   bool trigger_partitioning(uint32_t new_timestamp, uint32_t cross_edge_access,

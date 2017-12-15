@@ -13,6 +13,8 @@ public:
 protected:
   virtual void SetUp() {
     g = std::unique_ptr<Graph>(new Graph());
+    config = std::unique_ptr<Config>(new Config("./test/src/fb_partitioning/test_config.txt"));
+
     partitioning =
         std::unique_ptr<std::vector<uint32_t>>(new std::vector<uint32_t>());
 
@@ -37,12 +39,13 @@ protected:
 protected:
   std::unique_ptr<Graph> g;
   std::unique_ptr<std::vector<uint32_t>> partitioning;
+  std::unique_ptr<Config> config;
 };
 
 TEST_F(OracleTest, matrixTest) {
   // Graph g;
 
-  auto fb_partitioner = FB_partitioner(*g);
+  auto fb_partitioner = FB_partitioner(*g, *config);
   fb_partitioner.define_partitioning(std::move(*partitioning));
 
   auto matrix = fb_partitioner.get_oracle_matrix(4);
@@ -57,7 +60,7 @@ TEST_F(OracleTest, matrixTest) {
 TEST_F(OracleTest, testMoving) {
   // Graph g;
 
-  auto fb_partitioner = FB_partitioner(*g);
+  auto fb_partitioner = FB_partitioner(*g, *config);
   fb_partitioner.define_partitioning(std::move(*partitioning));
 
   auto matrix = fb_partitioner.partition(4);

@@ -30,6 +30,9 @@ inline bool is_selfdestruct(int type) { return type == OPSELFDESTRUCT_TYPE; }
 void add_edge_or_update_weigth(uint32_t from, uint32_t to, int weight, Graph &g);
 void remove_vertex(uint32_t from, Graph &g, Partitioner *p);
 
+void save_partitioning(const std::vector<uint32_t> &partitioning,
+                       uint32_t epoch, const std::string filename);
+
 template <typename F, typename... Args>
 double measure_time(F func, Args &&... args) {
   auto before = std::chrono::high_resolution_clock::now();

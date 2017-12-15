@@ -43,7 +43,7 @@ class HMETIS_partitioner : public Partitioner {
 public:
   const int METIS_UBFACTOR = 15;
   int METIS_OPTIONS[9];
-  HMETIS_partitioner(const Graph &graph);
+  HMETIS_partitioner(const Graph &graph, const Config &config);
   uint32_t partition(int nparts);
 
   bool trigger_partitioning(uint32_t new_timestamp, uint32_t cross_edge_access,

@@ -3,16 +3,13 @@
 #include <iostream>
 #include <vector>
 
-#include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/graph_traits.hpp>
-
 #include <config.h>
 #include <partitioner.h>
 
 class Hash_partitioner : public Partitioner {
 
 public:
-  Hash_partitioner(const Graph &graph) : Partitioner(0, graph) {}
+  Hash_partitioner(const Graph &graph, const Config &config) : Partitioner(0, graph, config) {}
 
   void assign_partition(const std::set<uint32_t> &vertex_list, int32_t nparts);
 

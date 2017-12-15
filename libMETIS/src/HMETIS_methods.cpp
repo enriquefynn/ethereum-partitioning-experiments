@@ -3,16 +3,16 @@
 #include <cstdlib>
 #include <fstream>
 #include <iomanip>
-#include <unordered_map>
 #include <metis.h>
+#include <unordered_map>
 
 #include <HMETIS_methods.h>
 #include <partitioner.h>
 
 #include <utils.h>
 
-HMETIS_partitioner::HMETIS_partitioner(const Graph &graph)
-    : Partitioner(METIS_SEED, graph) {
+HMETIS_partitioner::HMETIS_partitioner(const Graph &graph, const Config &config)
+    : Partitioner(METIS_SEED, graph, config) {
   assert(m_seed > 0);
   METIS_OPTIONS[0] = 1; // Default parameters
 
@@ -81,8 +81,7 @@ uint32_t HMETIS_partitioner::partition(int nparts) {
   call_command += std::to_string(nparts);
   call_command += " > /dev/null";
 
-  std::cout << "Elapsed time to partition: "
-            << Utils::measure_time(system, (call_command.c_str())) << std::endl;
+  system(call_command.c_str());
 
   std::ifstream hmetis_res("/tmp/hmetis_file.hgr.part." +
                            std::to_string(nparts));
@@ -110,6 +109,7 @@ bool HMETIS_partitioner::trigger_partitioning(
     if (new_timestamp - timestamp_last_check > TIME_REPARTITION_WINDOW) {
       if (new_timestamp - timestamp_last_repartition > TIME_REPARTITION) {
         if ((cross_partition_calls / total_calls) > CROSS_PARTITION_THRESHOLD) {
+          m_last_partitioning_time = timestamp_last_repartition;
           timestamp_last_repartition = new_timestamp;
           return true;
         }
@@ -121,6 +121,7 @@ bool HMETIS_partitioner::trigger_partitioning(
     return false;
   } else if (PARTITIONING_MODE == PERIODIC_PARTITIONING) {
     if (new_timestamp - timestamp_last_repartition > TIME_REPARTITION) {
+      m_last_partitioning_time = timestamp_last_repartition;
       timestamp_last_repartition = new_timestamp;
       return true;
     }

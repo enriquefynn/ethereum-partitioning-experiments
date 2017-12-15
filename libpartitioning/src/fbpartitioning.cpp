@@ -5,8 +5,8 @@
 #include <fbpartitioning.h>
 #include <utils.h>
 
-FB_partitioner::FB_partitioner(const Graph &graph)
-    : Partitioner(FACEBOOK_SEED, graph), m_gen(FACEBOOK_SEED) {}
+FB_partitioner::FB_partitioner(const Graph &graph, const Config &config)
+    : Partitioner(FACEBOOK_SEED, graph, config), m_gen(FACEBOOK_SEED) {}
 
 bool FB_partitioner::trigger_partitioning(uint32_t new_timestamp,
                                           uint32_t cross_edge_access,

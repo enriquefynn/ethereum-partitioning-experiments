@@ -1,20 +1,23 @@
 #pragma once
 
 #include <config.h>
+#include <iostream>
 #include <set>
 #include <vector>
-#include <iostream>
+
 class Partitioner {
 protected:
   const int32_t m_seed;
   const Graph &m_graph;
-
+  const Config &m_config;
+  uint32_t m_last_partitioning_time; // For saving the next partitioning
+  
 public:
   std::vector<uint32_t> m_partitioning;
   std::vector<uint32_t> m_balance;
-  Partitioner(int32_t seed, const Graph &graph)
-      : m_seed(seed), m_graph(graph), m_partitioning(0),
-        m_balance(N_PARTITIONS, 0){};
+  Partitioner(int32_t seed, const Graph &graph, const Config &config)
+      : m_seed(seed), m_graph(graph), m_config(config), m_last_partitioning_time(0),
+        m_partitioning(0), m_balance(N_PARTITIONS, 0){};
 
   virtual uint32_t partition(int32_t n_part) = 0;
   virtual bool trigger_partitioning(uint32_t new_timestamp,
