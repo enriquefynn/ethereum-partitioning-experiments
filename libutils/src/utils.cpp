@@ -22,6 +22,8 @@ void assign_hash_partition(std::vector<uint32_t> &partitioning,
   for (auto vertex = needs_partitioning; vertex != vertex_list.end();
        ++vertex) {
     best_partition = (*vertex % nparts);
+    if (*vertex != partitioning.size())
+      std::cout << *vertex << ' ' << partitioning.size() << std::endl;
     assert(*vertex == partitioning.size());
     // Cannot find good partition to put
     partitioning.push_back(best_partition);

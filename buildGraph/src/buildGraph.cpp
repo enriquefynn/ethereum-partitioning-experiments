@@ -19,6 +19,7 @@
 using namespace std;
 
 int main(int argc, char **argv) {
+  bool DEBUG = false;
   Graph g;
   Config config = Config(argv[2]);
 
@@ -164,13 +165,13 @@ int main(int argc, char **argv) {
           // cout << "Add " << from_vertex << " to " << to_vertex << endl;
           involved_edges.push_back({from_vertex, to_vertex});
         }
-        partitioner->assign_partition(involved_vertices, N_PARTITIONS);
-        for (const auto &edge : involved_edges) {
-          if (!partitioner->same_partition(edge.first, edge.second)) {
-            ++cross_edge_access;
-          } else {
-            ++same_partition_edge_access;
-          }
+      }
+      partitioner->assign_partition(involved_vertices, N_PARTITIONS);
+      for (const auto &edge : involved_edges) {
+        if (!partitioner->same_partition(edge.first, edge.second)) {
+          ++cross_edge_access;
+        } else {
+          ++same_partition_edge_access;
         }
       }
     }
