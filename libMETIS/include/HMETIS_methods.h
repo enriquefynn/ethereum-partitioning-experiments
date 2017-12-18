@@ -41,7 +41,7 @@ class HMETIS_partitioner : public Partitioner {
   int m_eind_size = 0;
 
 public:
-  const int METIS_UBFACTOR = 15;
+  const int METIS_UBFACTOR = 5;
   int METIS_OPTIONS[9];
   HMETIS_partitioner(const Graph &graph, const Config &config);
   uint32_t partition(int nparts);

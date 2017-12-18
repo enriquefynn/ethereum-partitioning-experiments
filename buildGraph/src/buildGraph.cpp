@@ -26,23 +26,23 @@ int main(int argc, char **argv) {
   Partitioner *partitioner;
   switch (config.PARTITIONING_MODE) {
   case config.HASH_PARTITIONER:
-    cout << "Using Hash partitioner" << endl;
+    cout << "Using Hash partitioner";
     partitioner = new Hash_partitioner(g, config);
     break;
   case config.METIS_PARTITIONER:
-    cout << "Using METIS partitioner" << endl;
+    cout << "Using METIS partitioner";
     partitioner = new METIS_partitioner(g, config);
     break;
   case config.HMETIS_PARTITIONER:
-    cout << "Using Hyper-METIS partitioner" << endl;
+    cout << "Using Hyper-METIS partitioner";
     partitioner = new HMETIS_partitioner(g, config);
     break;
   case config.FACEBOOK_PARTITIONER:
-    cout << "Using Facebook partitioner" << endl;
+    cout << "Using Facebook partitioner";
     partitioner = new FB_partitioner(g, config);
     break;
   case config.FILE_PARTITIONER:
-    cout << "Using File partitioner" << endl;
+    cout << "Using File partitioner";
     partitioner = new File_partitioner(g, config);
     break;
 
@@ -50,10 +50,11 @@ int main(int argc, char **argv) {
     assert(false);
     break;
   }
+  cout << ' ' << config.N_PARTITIONS << " partitions" << endl;
 
   ifstream calls_file(argv[1]);
   ofstream stats_file("/tmp/edge_cut_evolution_partitions_" +
-                      to_string(N_PARTITIONS) + "_period_" +
+                      to_string(config.N_PARTITIONS) + "_period_" +
                       to_string(TIME_GAP_LOG) + "_" + partitioner->get_name() +
                       +".txt");
 
@@ -66,8 +67,10 @@ int main(int argc, char **argv) {
   char header;
   string tx_value;
 
-  uint32_t cross_edge_access, same_partition_edge_access;
-  same_partition_edge_access = cross_edge_access = 0;
+  // uint32_t cross_partition_edge_access, same_partition_edge_access;
+  uint32_t cross_partition_tx_access, same_partition_tx_access;
+  // same_partition_edge_access = cross_partition_edge_access = 0;
+  cross_partition_tx_access = same_partition_tx_access = 0;
 
   lineN = timestamp_log = 0;
 
@@ -85,7 +88,7 @@ int main(int argc, char **argv) {
     involved_vertices.insert(to_vertex);
     Utils::add_edge_or_update_weigth(0, to_vertex, 1, g);
   }
-  partitioner->assign_partition(involved_vertices, N_PARTITIONS);
+  partitioner->assign_partition(involved_vertices, config.N_PARTITIONS);
 
   while (calls_file >> header >> block_number >> new_timestamp >>
          n_transactions) {
@@ -94,11 +97,13 @@ int main(int argc, char **argv) {
     if (!timestamp_log)
       timestamp_log = new_timestamp;
 
-    if (partitioner->trigger_partitioning(new_timestamp, cross_edge_access,
-                                          same_partition_edge_access)) {
+    if (partitioner->trigger_partitioning(new_timestamp,
+                                          cross_partition_tx_access,
+                                          same_partition_tx_access)) {
       // Partition the graph
       auto before = std::chrono::high_resolution_clock::now();
-      uint32_t movements_to_repartition = partitioner->partition(N_PARTITIONS);
+      uint32_t movements_to_repartition =
+          partitioner->partition(config.N_PARTITIONS);
       auto time_to_partition =
           std::chrono::duration_cast<std::chrono::milliseconds>(
               (std::chrono::high_resolution_clock::now() - before))
@@ -114,25 +119,27 @@ int main(int argc, char **argv) {
       stats_file << "REPARTITION " << new_timestamp << ' '
                  << boost::num_vertices(g) << ' ' << boost::num_edges(g) << ' '
                  << movements_to_repartition << ' ' << edges_cut << ' ';
-      for (int i = 0; i < N_PARTITIONS; ++i)
+      for (int i = 0; i < config.N_PARTITIONS; ++i)
         stats_file << balance[i] << ' ';
       stats_file << endl;
     }
 
     assert(new_timestamp >= timestamp_log);
     if (new_timestamp - timestamp_log > TIME_GAP_LOG) {
-      stats_file << "POINT " << cross_edge_access << ' '
-                 << same_partition_edge_access << ' ' << new_timestamp << ' ';
-      for (int i = 0; i < N_PARTITIONS; ++i)
+      stats_file << "POINT " << cross_partition_tx_access << ' '
+                 << same_partition_tx_access << ' ' << new_timestamp << ' ';
+      for (int i = 0; i < config.N_PARTITIONS; ++i)
         stats_file << partitioner->m_balance[i] << ' ';
       stats_file << endl;
-      same_partition_edge_access = cross_edge_access = 0;
+      same_partition_tx_access = cross_partition_tx_access = 0;
       timestamp_log = new_timestamp;
     }
 
     for (int tx = 0; tx < n_transactions; ++tx) {
       calls_file >> header >> tx_author >> tx_failed >> tx_types_size;
       assert(header == 'T');
+
+      bool cross_partition_tx = false;
       involved_vertices.clear();
       involved_edges.clear();
       delete_vertices.clear();
@@ -166,13 +173,17 @@ int main(int argc, char **argv) {
           involved_edges.push_back({from_vertex, to_vertex});
         }
       }
-      partitioner->assign_partition(involved_vertices, N_PARTITIONS);
+      partitioner->assign_partition(involved_vertices, config.N_PARTITIONS);
       for (const auto &edge : involved_edges) {
         if (!partitioner->same_partition(edge.first, edge.second)) {
-          ++cross_edge_access;
-        } else {
-          ++same_partition_edge_access;
+          cross_partition_tx = true;
+          break;
         }
+      }
+      if (cross_partition_tx) {
+        ++cross_partition_tx_access;
+      } else {
+        ++same_partition_tx_access;
       }
     }
   }
@@ -205,7 +216,7 @@ int main(int argc, char **argv) {
   //     if (!timestamp_log)
   //       timestamp_log = new_timestamp;
   //     if (partitioner->trigger_partitioning(new_timestamp,
-  //     cross_edge_access,
+  //     cross_partition_edge_access,
   //                                           same_partition_edge_access)) {
   //       // Partition the graph
   //       uint32_t movements_to_repartition =
@@ -227,14 +238,14 @@ int main(int argc, char **argv) {
   //     }
   //     assert(new_timestamp >= timestamp_log);
   //     if (new_timestamp - timestamp_log > TIME_GAP_LOG) {
-  //       stats_file << "POINT " << cross_edge_access << ' '
+  //       stats_file << "POINT " << cross_partition_edge_access << ' '
   //                  << same_partition_edge_access << ' ' << new_timestamp <<
   //                  '
   //                  ';
   //       for (int i = 0; i < N_PARTITIONS; ++i)
   //         stats_file << partitioner->m_balance[i] << ' ';
   //       stats_file << endl;
-  //       same_partition_edge_access = cross_edge_access = 0;
+  //       same_partition_edge_access = cross_partition_edge_access = 0;
   //       timestamp_log = new_timestamp;
   //     }
   //     break;
@@ -291,7 +302,7 @@ int main(int argc, char **argv) {
   //     partitioner->assign_partition(involved_vertices, N_PARTITIONS);
   //     for (const auto &edge : involved_edges) {
   //       if (!partitioner->same_partition(edge.first, edge.second)) {
-  //         ++cross_edge_access;
+  //         ++cross_partition_edge_access;
   //       } else {
   //         ++same_partition_edge_access;
   //       }

@@ -14,7 +14,7 @@ File_partitioner::File_partitioner(const Graph &graph, const Config &config)
   m_partitioning_file >> m_partitioning_epoch >> n_vertices;
   for (int i = 0; i < n_vertices; ++i) {
     m_partitioning_file >> part;
-    m_partitioning.push_back(part);
+    m_partitioning[i] = part;
   }
   m_partitioning_file >> m_partitioning_epoch;
 }
@@ -37,7 +37,7 @@ uint32_t File_partitioner::partition(int32_t n_partitions) {
   m_partitioning_file >> n_vertices;
   for (int i = 0; i < n_vertices; ++i) {
     m_partitioning_file >> part;
-    m_partitioning.push_back(part);
+    m_partitioning[i] = part;
   }
   m_partitioning_file >> m_partitioning_epoch;
 

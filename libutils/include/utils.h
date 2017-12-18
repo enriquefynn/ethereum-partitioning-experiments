@@ -1,10 +1,10 @@
 #pragma once
 
 #include <chrono>
+#include <config.h>
 #include <set>
 #include <utility>
 #include <vector>
-#include <config.h>
 
 #include <partitioner.h>
 
@@ -17,7 +17,7 @@
 #define OPSELFDESTRUCT_TYPE 6
 
 namespace Utils {
-void assign_hash_partition(std::vector<uint32_t> &partitioning,
+void assign_hash_partition(std::unordered_map<uint32_t, uint32_t> &partitioning,
                            std::vector<uint32_t> &balance,
                            const std::set<uint32_t> &vertex_list,
                            int32_t nparts);
@@ -27,10 +27,11 @@ inline bool has_value(int type) {
 }
 inline bool is_selfdestruct(int type) { return type == OPSELFDESTRUCT_TYPE; }
 
-void add_edge_or_update_weigth(uint32_t from, uint32_t to, int weight, Graph &g);
+void add_edge_or_update_weigth(uint32_t from, uint32_t to, int weight,
+                               Graph &g);
 void remove_vertex(uint32_t from, Graph &g, Partitioner *p);
 
-void save_partitioning(const std::vector<uint32_t> &partitioning,
+void save_partitioning(const std::unordered_map<uint32_t, uint32_t> &partitioning,
                        uint32_t epoch, const std::string filename);
 
 template <typename F, typename... Args>

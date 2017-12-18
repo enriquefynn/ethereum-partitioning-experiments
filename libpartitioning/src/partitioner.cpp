@@ -2,7 +2,7 @@
 #include <partitioner.h>
 void Partitioner::assign_partition(const std::set<uint32_t> &vertex_list,
                                    int32_t nparts) {
-  std::vector<int32_t> best_partitions(N_PARTITIONS, 0);
+  std::vector<int32_t> best_partitions(nparts, 0);
   auto needs_partitioning = vertex_list.end();
   for (auto vertex = vertex_list.begin(); vertex != vertex_list.end();
        ++vertex) {
@@ -15,7 +15,7 @@ void Partitioner::assign_partition(const std::set<uint32_t> &vertex_list,
 
   int best_partition = 0;
   bool is_same = true;
-  for (int i = 1; i < N_PARTITIONS; ++i) {
+  for (int i = 1; i < nparts; ++i) {
     if (best_partitions[i] != best_partitions[best_partition])
       is_same = false;
     if (best_partitions[i] > best_partitions[best_partition]) {
@@ -32,13 +32,14 @@ void Partitioner::assign_partition(const std::set<uint32_t> &vertex_list,
                         std::min_element(m_balance.begin(), m_balance.end()));
       best_partition = most_unbalanced_partition;
     }
-    m_partitioning.push_back(best_partition);
+    m_partitioning[*vertex] = best_partition;
     ++m_balance[best_partition];
   }
 }
 
 const uint32_t Partitioner::calculate_movements_repartition(
-    const std::vector<uint32_t> &old_partitioning, int32_t nparts) const {
+    const std::unordered_map<uint32_t, uint32_t> &old_partitioning,
+    int32_t nparts) const {
 
   uint32_t moves = 0;
   const size_t new_partitioning_size = m_partitioning.size();
@@ -46,7 +47,7 @@ const uint32_t Partitioner::calculate_movements_repartition(
   assert(new_partitioning_size == old_partitioning_size);
 
   for (size_t i = 0; i < old_partitioning_size; ++i)
-    if (old_partitioning[i] != m_partitioning[i])
+    if (old_partitioning.at(i) != m_partitioning.at(i))
       ++moves;
   return moves;
 }
@@ -56,7 +57,7 @@ Partitioner::calculate_edge_cut(const Graph &g) {
   typename GraphTraits::edge_iterator ei, ei_end;
   uint32_t edges_cut = 0;
 
-  for (int i = 0; i < N_PARTITIONS; ++i)
+  for (int i = 0; i < m_config.N_PARTITIONS; ++i)
     m_balance[i] = 0;
   for (auto vertex = boost::vertices(g); vertex.first != vertex.second;
        ++vertex.first) {

@@ -16,7 +16,6 @@ typedef GraphTraits::out_edge_iterator out_edge_it;
 #define PERIODIC_PARTITIONING 0
 #define DYNAMIC_PARTITIONING 1
 
-#define N_PARTITIONS 2
 #define TIME_GAP_LOG 60 * 60 * 4 // 4 hours
 
 class Config {
@@ -29,6 +28,7 @@ public:
     FILE_PARTITIONER
   };
   std::string FILE_PATH = "";
+  uint32_t N_PARTITIONS = 2;
   uint8_t PARTITIONING_MODE = HASH_PARTITIONER;
   Config(const std::string &config_file);
 

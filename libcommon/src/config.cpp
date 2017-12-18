@@ -27,6 +27,9 @@ Config::Config(const std::string &input_config) {
     else if (key == "FILEPATH") {
       FILE_PATH = value;
     }
+    else if (key == "N_PARTITIONS") {
+      N_PARTITIONS = std::stoul(value);
+    }
     else 
       assert(false);
   }

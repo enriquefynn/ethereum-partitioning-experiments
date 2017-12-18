@@ -5,7 +5,7 @@
 #include <fstream>
 #include <iostream>
 namespace Utils {
-void assign_hash_partition(std::vector<uint32_t> &partitioning,
+void assign_hash_partition(std::unordered_map<uint32_t, uint32_t> &partitioning,
                            std::vector<uint32_t> &balance,
                            const std::set<uint32_t> &vertex_list,
                            int32_t nparts) {
@@ -26,7 +26,7 @@ void assign_hash_partition(std::vector<uint32_t> &partitioning,
       std::cout << *vertex << ' ' << partitioning.size() << std::endl;
     assert(*vertex == partitioning.size());
     // Cannot find good partition to put
-    partitioning.push_back(best_partition);
+    partitioning[*vertex] = best_partition;
     ++balance[best_partition];
   }
 }
@@ -43,14 +43,14 @@ void remove_vertex(uint32_t from, Graph &g, Partitioner *p) {
   p->remove_vertex(from);
 }
 
-void save_partitioning(const std::vector<uint32_t> &partitioning,
+void save_partitioning(const std::unordered_map<uint32_t, uint32_t> &partitioning,
                        uint32_t epoch, const std::string filename) {
   if (filename.empty())
     return;
   std::ofstream partitioning_file(filename, std::ios_base::app);
   partitioning_file << epoch << ' ' << partitioning.size() << std::endl;
-  for (uint32_t p : partitioning)
-    partitioning_file << p << std::endl;
+  for (const auto &p : partitioning)
+    partitioning_file << p.second << std::endl;
 }
 
 } // namespace Utils
