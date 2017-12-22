@@ -23,9 +23,9 @@ CXXFLAGS = -g -O2 -fPIC -Wall $(C11FLAGS)
 SRCDIRS  = $(shell find $(SRCDIR) -type d)
 INCFLAGS = -I $(INCDIR) $(INCLUDES)
 
-#ifeq ($(UNAME), Linux)
-#    CXXFLAGS += -I/home/fynn/.local/include/c++/v1 -L/home/fynn/.local/lib -lc++abi
-#endif
+ifeq ($(UNAME), Linux)
+    CXXFLAGS += -I/home/fynn/.local/include/c++/v1 -L/home/fynn/.local/lib -lc++abi
+endif
 
 ## Stable Section: usually no need to be changed. 
 SHELL   = /bin/sh

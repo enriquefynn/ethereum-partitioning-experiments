@@ -63,7 +63,7 @@ add_edge_or_update_weigth(const vertex_id &from, const vertex_id &to,
                           map_type &id_vertex_map) {
 
   auto vertex_index_map = get(boost::vertex_index, g);
-  auto weights_map = get(boost::edge_weight, *g);
+  auto weights_map = get(boost::edge_weight, g);
 
   auto v_fr = id_vertex_map.find(from);
 
@@ -88,7 +88,18 @@ add_edge_or_update_weigth(const vertex_id &from, const vertex_id &to,
   } else
     to_desc = (*v_to).second;
 
-  return add_edge(fr_desc, to_desc, g);
+  // Update weight
+  Edge edge;
+  bool edge_found;
+  tie(edge, edge_found) = boost::edge(fr_desc, to_desc, g);
+  if (edge_found) {
+    auto current_weight = get(weights_map, edge);
+    put(weights_map, edge, current_weight + weight);
+  } else {
+    tie(edge, edge_found) = std::move(add_edge(fr_desc, to_desc, g));
+    put(weights_map, edge, weight);
+  }
+  return {edge, edge_found};
 }
 
 template <typename vertex_id, typename map_type>
@@ -106,8 +117,8 @@ void remove_vertex(vertex_id from, Graph &g, Partitioner *p,
 }
 
 template <typename map_type>
-void save_partitioning(map_type &partitioning,
-                       uint32_t epoch, std::fstream &partitioning_file,
+void save_partitioning(map_type &partitioning, uint32_t epoch,
+                       std::fstream &partitioning_file,
                        bool save_partitioning) {
   if (!save_partitioning)
     return;

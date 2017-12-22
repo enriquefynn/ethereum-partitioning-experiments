@@ -23,9 +23,9 @@ LDFLAGS = \
 	-lpartitioning \
 	-lcommon
 
-# ifeq ($(UNAME), Linux)
-#     LDFLAGS += \
-#     -lmetis
-# endif
+ifeq ($(UNAME), Linux)
+    LDFLAGS += \
+    -lmetis
+endif
 
 include ../Makefile.exe

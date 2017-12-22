@@ -19,6 +19,8 @@ METIS_partitioner::METIS_partitioner(const Graph &graph, Config &config)
 
 uint32_t METIS_partitioner::partition(idx_t nparts) {
   LOG_INFO("Begin partitioning");
+  auto weight_map = boost::get(boost::edge_weight, m_graph);
+
   std::unordered_map<uint32_t, idx_t> to_metis_vtx;
   std::unordered_map<idx_t, uint32_t> from_metis_vtx;
   uint32_t next_id = 0;
@@ -47,7 +49,7 @@ uint32_t METIS_partitioner::partition(idx_t nparts) {
       (idx_t *)malloc(2 * boost::num_edges(m_graph) * sizeof(idx_t));
   idx_t *part = (idx_t *)malloc(nvtxs * sizeof(idx_t));
 
-  idx_t weight, edge_idx = 0;
+  idx_t edge_idx = 0;
   xadj[0] = 0;
   idx_t v_idx = 1;
 
@@ -58,20 +60,17 @@ uint32_t METIS_partitioner::partition(idx_t nparts) {
   auto before = std::chrono::high_resolution_clock::now();
   for (const auto &vtx_k_v : m_config.m_id_to_vertex) {
     auto vertex_id = get_metis_id(Utils::get_id(vtx_k_v.second, m_graph));
-    std::vector<uint32_t> neighboors;
+    std::vector<std::pair<uint32_t, uint32_t>> neighboors;
     for (tie(edg_it, edg_it_end) = boost::out_edges(vtx_k_v.second, m_graph);
          edg_it != edg_it_end; ++edg_it) {
       neighboors.push_back(
-          Utils::get_id(boost::target(*edg_it, m_graph), m_graph));
+          {Utils::get_id(boost::target(*edg_it, m_graph), m_graph),
+           get(weight_map, *edg_it)});
     }
     sort(neighboors.begin(), neighboors.end());
     for (const auto &neighboor : neighboors) {
-
-      auto neighboor_id = get_metis_id(neighboor);
-      // weight = boost::get(boost::edge_weight_t(), m_graph, ed);
-      // TODO: weight
-      weight = 1;
-      transformed_graph[vertex_id].push_back({neighboor_id, weight});
+      auto neighboor_id = get_metis_id(neighboor.first);
+      transformed_graph[vertex_id].push_back({neighboor_id, neighboor.second});
     }
   }
   assert(transformed_graph.size() == nvtxs);
@@ -102,7 +101,7 @@ uint32_t METIS_partitioner::partition(idx_t nparts) {
       adjncy,  // The adjacency structure of the graph
       NULL,    // The weights of the vertices
       NULL,    // Size of vertices for computing the total communication volume
-      NULL,    // adjwgt,  // The weights of the edges
+      adjwgt,  // The weights of the edges
       &nparts, // The number of parts to partition the graph
       NULL, // nparts×ncon that specifies the desired weight for each partition
       NULL, // array of size ncon that specifies the allowed load imbalance
@@ -181,7 +180,7 @@ bool METIS_partitioner::trigger_partitioning(
 }
 
 void METIS_partitioner::assign_partition(const std::set<uint32_t> &vertex_list,
-                                          int32_t nparts) {
+                                         int32_t nparts) {
   Partitioner::assign_partition(vertex_list, nparts);
   // Build graph to save
   if (m_config.SAVE_PARTITIONING) {
