@@ -3,7 +3,10 @@
 
 #include <fbpartitioning.h>
 #include <fstream>
+#include <unordered_map>
 #include <utils.h>
+
+typedef std::unordered_map<uint32_t, uint32_t> map_type;
 
 using namespace std;
 class OracleTest : public ::testing::Test {
@@ -13,10 +16,11 @@ public:
 protected:
   virtual void SetUp() {
     g = std::unique_ptr<Graph>(new Graph());
-    config = std::unique_ptr<Config>(new Config("./test/src/fb_partitioning/test_config.txt"));
+    config = std::unique_ptr<Config>(
+        new Config("./test/src/fb_partitioning/test_config.txt"));
 
-    partitioning =
-        std::unique_ptr<std::vector<uint32_t>>(new std::vector<uint32_t>());
+    partitioning = std::unique_ptr<map_type>(
+        new map_type());
 
     std::ifstream test_graph("./test/src/fb_partitioning/test_graph.txt",
                              std::ifstream::in);
@@ -24,12 +28,12 @@ protected:
     test_graph >> n_edges;
     for (int i = 0; i < n_edges; ++i) {
       test_graph >> fr >> to;
-      Utils::add_edge_or_update_weigth(fr, to, 1, *g);
+      Utils::add_edge_or_update_weigth(fr, to, 1, *g, (*config).m_id_to_vertex);
     }
     test_graph >> n_vtx;
     for (int i = 0; i < n_vtx; ++i) {
       test_graph >> fr;
-      partitioning->push_back(fr);
+      (*partitioning)[i] = fr;
     }
   }
   virtual void TearDown() {
@@ -38,12 +42,11 @@ protected:
 
 protected:
   std::unique_ptr<Graph> g;
-  std::unique_ptr<std::vector<uint32_t>> partitioning;
+  std::unique_ptr<map_type> partitioning;
   std::unique_ptr<Config> config;
 };
 
 TEST_F(OracleTest, matrixTest) {
-  // Graph g;
 
   auto fb_partitioner = FB_partitioner(*g, *config);
   fb_partitioner.define_partitioning(std::move(*partitioning));
@@ -57,14 +60,13 @@ TEST_F(OracleTest, matrixTest) {
   EXPECT_EQ(v, matrix);
 }
 
-TEST_F(OracleTest, testMoving) {
-  // Graph g;
+// TEST_F(OracleTest, testMoving) {
+//   // Graph g;
 
-  auto fb_partitioner = FB_partitioner(*g, *config);
-  fb_partitioner.define_partitioning(std::move(*partitioning));
+//   auto fb_partitioner = FB_partitioner(*g, *config);
+//   fb_partitioner.define_partitioning(std::move(*partitioning));
 
-  auto matrix = fb_partitioner.partition(4);
+//   auto matrix = fb_partitioner.partition(4);
 
-
-  // EXPECT_EQ(v, matrix);
-}
+//   // EXPECT_EQ(v, matrix);
+// }

@@ -12,6 +12,8 @@
 #define METIS_SEED 1
 
 class METIS_partitioner : public Partitioner {
+  std::unordered_map<uint32_t, uint32_t> m_saved_partitioning;
+
   uint32_t timestamp_last_repartition = 0;
   uint32_t timestamp_last_check = 0;
   float cross_partition_calls = 0;
@@ -26,11 +28,13 @@ class METIS_partitioner : public Partitioner {
 
 public:
   idx_t METIS_OPTIONS[METIS_NOPTIONS];
-  METIS_partitioner(const Graph &graph, const Config &config);
+  METIS_partitioner(const Graph &graph, Config &config);
   uint32_t partition(idx_t nparts);
 
   bool trigger_partitioning(uint32_t new_timestamp, uint32_t cross_edge_access,
                             uint32_t same_partition_edge_access);
+
+  void assign_partition(const std::set<uint32_t> &vertex_list, int32_t nparts);
 
   std::string get_name();
 

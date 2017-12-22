@@ -9,7 +9,7 @@
 class Hash_partitioner : public Partitioner {
 
 public:
-  Hash_partitioner(const Graph &graph, const Config &config) : Partitioner(0, graph, config) {}
+  Hash_partitioner(const Graph &graph, Config &config) : Partitioner(0, graph, config) {}
 
   void assign_partition(const std::set<uint32_t> &vertex_list, int32_t nparts);
 

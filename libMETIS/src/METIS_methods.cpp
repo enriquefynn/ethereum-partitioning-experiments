@@ -3,10 +3,11 @@
 #include <metis.h>
 
 #include <METIS_methods.h>
+#include <log.h>
 #include <partitioner.h>
 #include <utils.h>
 
-METIS_partitioner::METIS_partitioner(const Graph &graph, const Config &config)
+METIS_partitioner::METIS_partitioner(const Graph &graph, Config &config)
     : Partitioner(METIS_SEED, graph, config) {
   assert(m_seed > 0);
   METIS_SetDefaultOptions(METIS_OPTIONS);
@@ -17,6 +18,19 @@ METIS_partitioner::METIS_partitioner(const Graph &graph, const Config &config)
 }
 
 uint32_t METIS_partitioner::partition(idx_t nparts) {
+  LOG_INFO("Begin partitioning");
+  std::unordered_map<uint32_t, idx_t> to_metis_vtx;
+  std::unordered_map<idx_t, uint32_t> from_metis_vtx;
+  uint32_t next_id = 0;
+  auto get_metis_id = [&](uint32_t vtx) {
+    if (to_metis_vtx.count(vtx) == 0) {
+      to_metis_vtx[vtx] = next_id;
+      from_metis_vtx[next_id] = vtx;
+      ++next_id;
+    }
+    return to_metis_vtx[vtx];
+  };
+
   out_edge_it edg_it, edg_it_end;
   Edge ed;
   // void partition_METIS(Graph &g, idx_t nparts) {
@@ -33,21 +47,52 @@ uint32_t METIS_partitioner::partition(idx_t nparts) {
       (idx_t *)malloc(2 * boost::num_edges(m_graph) * sizeof(idx_t));
   idx_t *part = (idx_t *)malloc(nvtxs * sizeof(idx_t));
 
-  uint32_t weight, edge_idx = 0;
+  idx_t weight, edge_idx = 0;
   xadj[0] = 0;
-  int32_t v_idx = 1;
-  for (vertex = boost::vertices(m_graph); vertex.first != vertex.second;
-       ++vertex.first, ++v_idx) {
-    for (tie(edg_it, edg_it_end) = boost::out_edges(*vertex.first, m_graph);
+  idx_t v_idx = 1;
+
+  std::vector<std::vector<std::pair<idx_t, idx_t>>> transformed_graph(nvtxs);
+
+  // for (vertex = boost::vertices(m_graph); vertex.first != vertex.second;
+  //    ++vertex.first) {
+  auto before = std::chrono::high_resolution_clock::now();
+  for (const auto &vtx_k_v : m_config.m_id_to_vertex) {
+    auto vertex_id = get_metis_id(Utils::get_id(vtx_k_v.second, m_graph));
+    std::vector<uint32_t> neighboors;
+    for (tie(edg_it, edg_it_end) = boost::out_edges(vtx_k_v.second, m_graph);
          edg_it != edg_it_end; ++edg_it) {
-      ed = *edg_it;
-      weight = boost::get(boost::edge_weight_t(), m_graph, ed);
-      adjncy[edge_idx] = boost::target(ed, m_graph);
-      adjwgt[edge_idx] = weight;
+      neighboors.push_back(
+          Utils::get_id(boost::target(*edg_it, m_graph), m_graph));
+    }
+    sort(neighboors.begin(), neighboors.end());
+    for (const auto &neighboor : neighboors) {
+
+      auto neighboor_id = get_metis_id(neighboor);
+      // weight = boost::get(boost::edge_weight_t(), m_graph, ed);
+      // TODO: weight
+      weight = 1;
+      transformed_graph[vertex_id].push_back({neighboor_id, weight});
+    }
+  }
+  assert(transformed_graph.size() == nvtxs);
+  auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                 (std::chrono::high_resolution_clock::now() - before))
+                 .count();
+  LOG_INFO("Time to construct metagraph: %lld", now);
+  before = std::chrono::high_resolution_clock::now();
+  for (idx_t vertex = 0; vertex < transformed_graph.size(); ++vertex, ++v_idx) {
+    for (auto const &neighboor : transformed_graph[vertex]) {
+      adjncy[edge_idx] = neighboor.first;
+      adjwgt[edge_idx] = neighboor.second;
       ++edge_idx;
     }
     xadj[v_idx] = edge_idx;
   }
+  now = std::chrono::duration_cast<std::chrono::milliseconds>(
+            (std::chrono::high_resolution_clock::now() - before))
+            .count();
+  LOG_INFO("Time to construct METIS graph: %lld", now);
+  before = std::chrono::high_resolution_clock::now();
 
   idx_t objval;
   int return_METIS = METIS_PartGraphKway(
@@ -57,7 +102,7 @@ uint32_t METIS_partitioner::partition(idx_t nparts) {
       adjncy,  // The adjacency structure of the graph
       NULL,    // The weights of the vertices
       NULL,    // Size of vertices for computing the total communication volume
-      adjwgt,  // The weights of the edges
+      NULL,    // adjwgt,  // The weights of the edges
       &nparts, // The number of parts to partition the graph
       NULL, // nparts×ncon that specifies the desired weight for each partition
       NULL, // array of size ncon that specifies the allowed load imbalance
@@ -66,17 +111,40 @@ uint32_t METIS_partitioner::partition(idx_t nparts) {
       &objval, part);
   assert(return_METIS == METIS_OK);
 
+  now = std::chrono::duration_cast<std::chrono::milliseconds>(
+            (std::chrono::high_resolution_clock::now() - before))
+            .count();
+  LOG_INFO("Time to run METIS: %lld", now);
+  before = std::chrono::high_resolution_clock::now();
+
   auto old_partitioning = std::move(m_partitioning);
   assert(m_partitioning.size() == 0);
-  for (int i = 0; i < nvtxs; ++i)
-    m_partitioning[i] = part[i];
-    
+  for (int i = 0; i < nvtxs; ++i) {
+    m_partitioning[from_metis_vtx[i]] = part[i];
+    if (m_config.SAVE_PARTITIONING)
+      m_saved_partitioning[from_metis_vtx[i]] = part[i];
+  }
+
+  now = std::chrono::duration_cast<std::chrono::milliseconds>(
+            (std::chrono::high_resolution_clock::now() - before))
+            .count();
+  LOG_INFO("Time to assign partitioning: %lld", now);
+
   free(xadj);
   free(adjncy);
   free(adjwgt);
   free(part);
-  Utils::save_partitioning(m_partitioning, m_last_partitioning_time,
-                           m_config.FILE_PATH);
+
+  before = std::chrono::high_resolution_clock::now();
+  Utils::save_partitioning(m_saved_partitioning, m_last_partitioning_time,
+                           m_config.FILE_INPUT, m_config.SAVE_PARTITIONING);
+
+  now = std::chrono::duration_cast<std::chrono::milliseconds>(
+            (std::chrono::high_resolution_clock::now() - before))
+            .count();
+  LOG_INFO("Time to save partitioning: %lld", now);
+
+  LOG_INFO("End partitioning");
   return calculate_movements_repartition(old_partitioning, nparts);
 }
 
@@ -109,6 +177,17 @@ bool METIS_partitioner::trigger_partitioning(
     return false;
   } else {
     assert(false);
+  }
+}
+
+void METIS_partitioner::assign_partition(const std::set<uint32_t> &vertex_list,
+                                          int32_t nparts) {
+  Partitioner::assign_partition(vertex_list, nparts);
+  // Build graph to save
+  if (m_config.SAVE_PARTITIONING) {
+    for (auto const &vertex : vertex_list) {
+      m_saved_partitioning[vertex] = m_partitioning[vertex];
+    }
   }
 }
 

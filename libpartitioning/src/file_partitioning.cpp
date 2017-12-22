@@ -5,16 +5,16 @@
 #include <file_partitioning.h>
 #include <utils.h>
 
-File_partitioner::File_partitioner(const Graph &graph, const Config &config)
-    : Partitioner(0, graph, config), m_partitioning_epoch(0) {
-  assert(!config.FILE_PATH.empty());
-  m_partitioning_file = std::ifstream(config.FILE_PATH);
+File_partitioner::File_partitioner(const Graph &graph, Config &config)
+    : Partitioner(0, graph, config), m_partitioning_file(config.FILE_PATH),
+      m_partitioning_epoch(0) {
+  assert(m_config.SAVE_PARTITIONING);
 
-  uint32_t n_vertices, part;
+  uint32_t n_vertices, part, vertex;
   m_partitioning_file >> m_partitioning_epoch >> n_vertices;
   for (int i = 0; i < n_vertices; ++i) {
-    m_partitioning_file >> part;
-    m_partitioning[i] = part;
+    m_partitioning_file >> vertex >> part;
+    m_partitioning[vertex] = part;
   }
   m_partitioning_file >> m_partitioning_epoch;
 }
@@ -30,18 +30,18 @@ bool File_partitioner::trigger_partitioning(
 
 uint32_t File_partitioner::partition(int32_t n_partitions) {
 
-  uint32_t n_vertices, part;
+  uint32_t n_vertices, part, vertex;
   auto old_partitioning = std::move(m_partitioning);
   assert(m_partitioning.size() == 0);
 
   m_partitioning_file >> n_vertices;
   for (int i = 0; i < n_vertices; ++i) {
-    m_partitioning_file >> part;
-    m_partitioning[i] = part;
+    m_partitioning_file >> vertex >> part;
+    m_partitioning[vertex] = part;
   }
   m_partitioning_file >> m_partitioning_epoch;
-
-  return 0;//calculate_movements_repartition(old_partitioning, n_partitions);
+  return 0;
+  // return calculate_movements_repartition(old_partitioning, n_partitions);
 }
 
 // // Hash partitioning for new vertexes

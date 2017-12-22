@@ -86,13 +86,14 @@ int main(int argc, char **argv) {
   for (int tx = 0; tx < n_transactions; ++tx) {
     calls_file >> to_vertex >> tx_value;
     involved_vertices.insert(to_vertex);
-    Utils::add_edge_or_update_weigth(0, to_vertex, 1, g);
+    Utils::add_edge_or_update_weigth(0u, to_vertex, 1, g, config.m_id_to_vertex);
   }
   partitioner->assign_partition(involved_vertices, config.N_PARTITIONS);
 
   while (calls_file >> header >> block_number >> new_timestamp >>
          n_transactions) {
     assert(header == 'B');
+    // cout << "BLOCK: " << block_number << endl;
 
     if (!timestamp_log)
       timestamp_log = new_timestamp;
@@ -164,16 +165,24 @@ int main(int argc, char **argv) {
           if (Utils::is_selfdestruct(tx_type) && !tx_failed) {
             // From: contract that was suicided
             // To: Funds moved there
-            // Utils::remove_vertex(from_vertex, g, partitioner);
             delete_vertices.push_back(from_vertex);
-            continue;
+            // continue;
           }
-          Utils::add_edge_or_update_weigth(from_vertex, to_vertex, weight, g);
+          // cout << "Previous graph size: " << boost::num_vertices(g) << endl;
+          // cout << "Add edge(" << from_vertex << "," << to_vertex << "), new g size: " << boost::num_vertices(g) << " part size: " << partitioner->m_partitioning.size() << endl;
+
+          Utils::add_edge_or_update_weigth(from_vertex, to_vertex, weight, g, config.m_id_to_vertex);
+          // cout << "Added edge(" << from_vertex << "," << to_vertex << "), new g size: " << boost::num_vertices(g) << " part size: " << partitioner->m_partitioning.size() << endl;
           // cout << "Add " << from_vertex << " to " << to_vertex << endl;
           involved_edges.push_back({from_vertex, to_vertex});
         }
       }
       partitioner->assign_partition(involved_vertices, config.N_PARTITIONS);
+      
+      // cout << "S: " << partitioner->m_partitioning.size() << ' ' << boost::num_vertices(g) << endl;
+      if (!config.SAVE_PARTITIONING)
+        assert(partitioner->m_partitioning.size() == boost::num_vertices(g));
+
       for (const auto &edge : involved_edges) {
         if (!partitioner->same_partition(edge.first, edge.second)) {
           cross_partition_tx = true;
@@ -184,6 +193,13 @@ int main(int argc, char **argv) {
         ++cross_partition_tx_access;
       } else {
         ++same_partition_tx_access;
+      }
+      for (const auto vtx : delete_vertices) {
+        // cout << "DELETE: " << vtx << endl;
+        // cout << "SIZES: " << partitioner->m_partitioning.size() << ' ' << boost::num_vertices(g) << endl;
+        Utils::remove_vertex(vtx, g, partitioner, config.m_id_to_vertex);
+        // cout << "SIZES: " << partitioner->m_partitioning.size() << ' ' << boost::num_vertices(g) << endl;
+        //assert(partitioner->m_partitioning.size() == boost::num_vertices(g));
       }
     }
   }

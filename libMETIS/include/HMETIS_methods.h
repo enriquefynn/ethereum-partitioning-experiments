@@ -24,6 +24,8 @@ void HMETIS_PartRecursive(int nvtxs, int nhedges, int *vwgts, int *eptr,
 }
 
 class HMETIS_partitioner : public Partitioner {
+  std::unordered_map<uint32_t, uint32_t> m_saved_partitioning;
+  
   uint32_t timestamp_last_repartition = 0;
   uint32_t timestamp_last_check = 0;
   float cross_partition_calls = 0;
@@ -43,7 +45,7 @@ class HMETIS_partitioner : public Partitioner {
 public:
   const int METIS_UBFACTOR = 5;
   int METIS_OPTIONS[9];
-  HMETIS_partitioner(const Graph &graph, const Config &config);
+  HMETIS_partitioner(const Graph &graph, Config &config);
   uint32_t partition(int nparts);
 
   bool trigger_partitioning(uint32_t new_timestamp, uint32_t cross_edge_access,

@@ -15,7 +15,7 @@ Config::Config(const std::string &input_config) {
         PARTITIONING_MODE = HASH_PARTITIONER;
       else if (value == "METIS")
         PARTITIONING_MODE = METIS_PARTITIONER;
-       else if (value == "HMETIS")
+      else if (value == "HMETIS")
         PARTITIONING_MODE = HMETIS_PARTITIONER;
       else if (value == "FACEBOOK")
         PARTITIONING_MODE = FACEBOOK_PARTITIONER;
@@ -23,14 +23,18 @@ Config::Config(const std::string &input_config) {
         PARTITIONING_MODE = FILE_PARTITIONER;
       else
         assert(false);
-    }
-    else if (key == "FILEPATH") {
+    } else if (key == "FILEPATH") {
+      SAVE_PARTITIONING = true;
       FILE_PATH = value;
-    }
-    else if (key == "N_PARTITIONS") {
+    } else if (key == "N_PARTITIONS") {
       N_PARTITIONS = std::stoul(value);
-    }
-    else 
+    } else
       assert(false);
+  }
+  if (SAVE_PARTITIONING) {
+    if (PARTITIONING_MODE == FILE_PARTITIONER)
+      FILE_INPUT = std::fstream(value, std::ios::in);
+    else
+      FILE_INPUT = std::fstream(value, std::ios::out);
   }
 }

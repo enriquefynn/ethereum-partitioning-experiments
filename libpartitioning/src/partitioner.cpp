@@ -1,7 +1,12 @@
 #include <iostream>
 #include <partitioner.h>
+#include <utils.h>
 void Partitioner::assign_partition(const std::set<uint32_t> &vertex_list,
                                    int32_t nparts) {
+  // std::cout << "Involved vertices: ";
+  // for (const auto &it : vertex_list)
+  //   std::cout << it << ' ';
+  // std::cout << std::endl;
   std::vector<int32_t> best_partitions(nparts, 0);
   auto needs_partitioning = vertex_list.end();
   for (auto vertex = vertex_list.begin(); vertex != vertex_list.end();
@@ -24,7 +29,7 @@ void Partitioner::assign_partition(const std::set<uint32_t> &vertex_list,
   }
   for (auto vertex = needs_partitioning; vertex != vertex_list.end();
        ++vertex) {
-    assert(*vertex == m_partitioning.size());
+    //assert(*vertex == m_partitioning.size());
     // Cannot find good partition to put
     if (is_same) {
       auto most_unbalanced_partition =
@@ -34,22 +39,9 @@ void Partitioner::assign_partition(const std::set<uint32_t> &vertex_list,
     }
     m_partitioning[*vertex] = best_partition;
     ++m_balance[best_partition];
+    // std::cout << "Assigning part to: " << *vertex << " in " << best_partition
+    //           << " size: " << m_partitioning.size() << std::endl;
   }
-}
-
-const uint32_t Partitioner::calculate_movements_repartition(
-    const std::unordered_map<uint32_t, uint32_t> &old_partitioning,
-    int32_t nparts) const {
-
-  uint32_t moves = 0;
-  const size_t new_partitioning_size = m_partitioning.size();
-  const size_t old_partitioning_size = old_partitioning.size();
-  assert(new_partitioning_size == old_partitioning_size);
-
-  for (size_t i = 0; i < old_partitioning_size; ++i)
-    if (old_partitioning.at(i) != m_partitioning.at(i))
-      ++moves;
-  return moves;
 }
 
 const std::tuple<uint32_t, std::vector<uint32_t>>
@@ -61,13 +53,16 @@ Partitioner::calculate_edge_cut(const Graph &g) {
     m_balance[i] = 0;
   for (auto vertex = boost::vertices(g); vertex.first != vertex.second;
        ++vertex.first) {
-    ++m_balance[m_partitioning[*vertex.first]];
+    auto vertex_id = Utils::get_id(*vertex.first, m_graph);
+    ++m_balance[m_partitioning[vertex_id]];
   }
 
-  for (tie(ei, ei_end) = edges(g); ei != ei_end; ++ei)
-    if (m_partitioning[boost::source(*ei, g)] !=
-        m_partitioning[boost::target(*ei, g)])
+  for (tie(ei, ei_end) = edges(g); ei != ei_end; ++ei) {
+    auto source_id = Utils::get_id(boost::source(*ei, g), m_graph);
+    auto target_id = Utils::get_id(boost::target(*ei, g), m_graph);
+    if (m_partitioning[source_id] != m_partitioning[target_id])
       ++edges_cut;
+  }
 
   return make_tuple(edges_cut, m_balance);
 }

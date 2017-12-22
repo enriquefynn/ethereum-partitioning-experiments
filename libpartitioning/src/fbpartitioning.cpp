@@ -5,7 +5,7 @@
 #include <fbpartitioning.h>
 #include <utils.h>
 
-FB_partitioner::FB_partitioner(const Graph &graph, const Config &config)
+FB_partitioner::FB_partitioner(const Graph &graph, Config &config)
     : Partitioner(FACEBOOK_SEED, graph, config), m_gen(FACEBOOK_SEED) {}
 
 bool FB_partitioner::trigger_partitioning(uint32_t new_timestamp,
@@ -46,27 +46,29 @@ std::vector<uint32_t> FB_partitioner::get_neighbors(uint32_t n_partitions) {
   // For every vertex, calcuate neighbors other partitions
   for (auto vertex = boost::vertices(m_graph); vertex.first != vertex.second;
        ++vertex.first) {
+    auto vertex_id = Utils::get_id(*vertex.first, m_graph);
     std::vector<uint32_t> neighbors_in_partition(n_partitions);
     // std::cout << boost::out_degree(*vertex.first, m_graph) << std::endl;
 
     for (tie(edg_it, edg_it_end) = boost::out_edges(*vertex.first, m_graph);
          edg_it != edg_it_end; ++edg_it) {
       ed = *edg_it;
-      ++neighbors_in_partition[m_partitioning[boost::target(ed, m_graph)]];
+      ++neighbors_in_partition[m_partitioning[Utils::get_id(
+          boost::target(ed, m_graph), m_graph)]];
     }
     // std::cout << "Neigh of " << *vertex.first << ": ";
     // for (int i = 0; i < neighbors_in_partition.size(); ++i) {
     //   std::cout << neighbors_in_partition[i] << ' ';
     // }
     // std::cout << std::endl;
-    uint32_t max_p = m_partitioning[*vertex.first];
+    uint32_t max_p = m_partitioning[vertex_id];
     for (int i = 0; i < n_partitions; ++i) {
       if (neighbors_in_partition[i] > neighbors_in_partition[max_p]) {
         max_p = i;
       }
     }
     // std::cout << "max v[" << *vertex.first << "]: " << max_p << std::endl;
-    partition_to_go[*vertex.first] = max_p;
+    partition_to_go[vertex_id] = max_p;
   }
 
   // for (auto vertex = boost::vertices(m_graph); vertex.first != vertex.second;
@@ -147,7 +149,8 @@ uint32_t FB_partitioner::partition(int32_t n_partitions) {
           if (should_go) {
             ++n_moves;
             // assert(m_partitioning[v] == 0);
-            // std::cout << "prob: " << prob << " MOVE from: " << m_partitioning[v]
+            // std::cout << "prob: " << prob << " MOVE from: " <<
+            // m_partitioning[v]
             //           << " to: " << j << std::endl;
             m_partitioning[v] = j;
           }
@@ -161,7 +164,8 @@ uint32_t FB_partitioner::partition(int32_t n_partitions) {
           if (should_go) {
             ++n_moves;
             // assert(m_partitioning[v] == 0);
-            // std::cout << "prob: " << prob << " MOVE from: " << m_partitioning[v]
+            // std::cout << "prob: " << prob << " MOVE from: " <<
+            // m_partitioning[v]
             //           << " to: " << i << std::endl;
             m_partitioning[v] = i;
           }

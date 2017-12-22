@@ -11,7 +11,7 @@
 
 #include <utils.h>
 
-HMETIS_partitioner::HMETIS_partitioner(const Graph &graph, const Config &config)
+HMETIS_partitioner::HMETIS_partitioner(const Graph &graph, Config &config)
     : Partitioner(METIS_SEED, graph, config) {
   assert(m_seed > 0);
   METIS_OPTIONS[0] = 1; // Default parameters
@@ -145,6 +145,12 @@ void HMETIS_partitioner::assign_partition(const std::set<uint32_t> &vertex_list,
     m_hGraph[vertex_list] = 0;
   }
   ++m_hGraph[vertex_list];
+  
+  if (m_config.SAVE_PARTITIONING) {
+    for (auto const &vertex : vertex_list) {
+      m_saved_partitioning[vertex] = m_partitioning[vertex];
+    }
+  }
 }
 
 std::string HMETIS_partitioner::get_name() {
