@@ -80,15 +80,19 @@ int main(int argc, char **argv) {
 
   // Genesis processing
   uint32_t n_transactions;
-
   calls_file >> header >> n_transactions;
   involved_vertices.insert(0);
   for (int tx = 0; tx < n_transactions; ++tx) {
     calls_file >> to_vertex >> tx_value;
     involved_vertices.insert(to_vertex);
-    Utils::add_edge_or_update_weigth(0u, to_vertex, 1, g, config.m_id_to_vertex);
+    Utils::add_edge_or_update_weigth(0u, to_vertex, 1, g,
+                                     config.m_id_to_vertex);
   }
   partitioner->assign_partition(involved_vertices, config.N_PARTITIONS);
+  // End Genesis processing
+
+  // Track how many transactions touched the partition individually
+  vector<uint32_t> txs_per_partition(config.N_PARTITIONS, 0);
 
   while (calls_file >> header >> block_number >> new_timestamp >>
          n_transactions) {
@@ -130,9 +134,11 @@ int main(int argc, char **argv) {
       stats_file << "POINT " << cross_partition_tx_access << ' '
                  << same_partition_tx_access << ' ' << new_timestamp << ' ';
       for (int i = 0; i < config.N_PARTITIONS; ++i)
-        stats_file << partitioner->m_balance[i] << ' ';
+        stats_file << partitioner->m_balance[i] << ' ' << txs_per_partition[i]
+                   << ' ';
       stats_file << endl;
       same_partition_tx_access = cross_partition_tx_access = 0;
+      std::fill(txs_per_partition.begin(), txs_per_partition.end(), 0);
       timestamp_log = new_timestamp;
     }
 
@@ -140,7 +146,6 @@ int main(int argc, char **argv) {
       calls_file >> header >> tx_author >> tx_failed >> tx_types_size;
       assert(header == 'T');
 
-      bool cross_partition_tx = false;
       involved_vertices.clear();
       involved_edges.clear();
       delete_vertices.clear();
@@ -169,175 +174,53 @@ int main(int argc, char **argv) {
             // continue;
           }
           // cout << "Previous graph size: " << boost::num_vertices(g) << endl;
-          // cout << "Add edge(" << from_vertex << "," << to_vertex << "), new g size: " << boost::num_vertices(g) << " part size: " << partitioner->m_partitioning.size() << endl;
+          // cout << "Add edge(" << from_vertex << "," << to_vertex << "), new g
+          // size: " << boost::num_vertices(g) << " part size: " <<
+          // partitioner->m_partitioning.size() << endl;
 
-          Utils::add_edge_or_update_weigth(from_vertex, to_vertex, weight, g, config.m_id_to_vertex);
-          // cout << "Added edge(" << from_vertex << "," << to_vertex << "), new g size: " << boost::num_vertices(g) << " part size: " << partitioner->m_partitioning.size() << endl;
-          // cout << "Add " << from_vertex << " to " << to_vertex << endl;
+          Utils::add_edge_or_update_weigth(from_vertex, to_vertex, weight, g,
+                                           config.m_id_to_vertex);
+          // cout << "Added edge(" << from_vertex << "," << to_vertex << "), new
+          // g size: " << boost::num_vertices(g) << " part size: " <<
+          // partitioner->m_partitioning.size() << endl; cout << "Add " <<
+          // from_vertex << " to " << to_vertex << endl;
           involved_edges.push_back({from_vertex, to_vertex});
         }
       }
       partitioner->assign_partition(involved_vertices, config.N_PARTITIONS);
-      
-      // cout << "S: " << partitioner->m_partitioning.size() << ' ' << boost::num_vertices(g) << endl;
+
+      // cout << "S: " << partitioner->m_partitioning.size() << ' ' <<
+      // boost::num_vertices(g) << endl;
       if (!config.SAVE_PARTITIONING)
         assert(partitioner->m_partitioning.size() == boost::num_vertices(g));
 
+      std::unordered_set<uint32_t> partitions_involved;
       for (const auto &edge : involved_edges) {
-        if (!partitioner->same_partition(edge.first, edge.second)) {
-          cross_partition_tx = true;
-          break;
-        }
+        auto fr_p = partitioner->m_partitioning[edge.first];
+        auto to_p = partitioner->m_partitioning[edge.second];
+        partitions_involved.insert(fr_p);
+        partitions_involved.insert(to_p);
       }
-      if (cross_partition_tx) {
-        ++cross_partition_tx_access;
-      } else {
+
+      if (partitions_involved.size() == 1) {
         ++same_partition_tx_access;
+      } else {
+        ++cross_partition_tx_access;
       }
+      for (const auto &p : partitions_involved) {
+        ++txs_per_partition[p];
+      }
+
       for (const auto vtx : delete_vertices) {
         // cout << "DELETE: " << vtx << endl;
-        // cout << "SIZES: " << partitioner->m_partitioning.size() << ' ' << boost::num_vertices(g) << endl;
+        // cout << "SIZES: " << partitioner->m_partitioning.size() << ' ' <<
+        // boost::num_vertices(g) << endl;
         Utils::remove_vertex(vtx, g, partitioner, config.m_id_to_vertex);
-        // cout << "SIZES: " << partitioner->m_partitioning.size() << ' ' << boost::num_vertices(g) << endl;
-        //assert(partitioner->m_partitioning.size() == boost::num_vertices(g));
+        // cout << "SIZES: " << partitioner->m_partitioning.size() << ' ' <<
+        // boost::num_vertices(g) << endl;
+        // assert(partitioner->m_partitioning.size() == boost::num_vertices(g));
       }
     }
   }
-
-  // while (getline(calls_file, str)) {
-  //   lineN += 1;
-  //   tokens.clear();
-  //   istringstream iss(str);
-  //   copy(istream_iterator<string>(iss), istream_iterator<string>(),
-  //        back_inserter(tokens));
-
-  //   assert(tokens[0][0] == 'B');
-
-  //   switch (tokens[0][0]) {
-  //   // Genesis
-  //   case 'G': {
-  //     processing_genesis = true;
-  //     to_vertex = stoi(tokens[1]);
-  //     involved_vertices.insert(0);
-  //     involved_vertices.insert(to_vertex);
-  //     Utils::add_edge_or_update_weigth(0, to_vertex, 1, g);
-  //     break;
-  //   }
-  //   case 'B': {
-  //     if (processing_genesis) {
-  //       partitioner->assign_partition(involved_vertices, N_PARTITIONS);
-  //       processing_genesis = false;
-  //     }
-  //     new_timestamp = stoi(tokens[2]);
-  //     if (!timestamp_log)
-  //       timestamp_log = new_timestamp;
-  //     if (partitioner->trigger_partitioning(new_timestamp,
-  //     cross_partition_edge_access,
-  //                                           same_partition_edge_access)) {
-  //       // Partition the graph
-  //       uint32_t movements_to_repartition =
-  //           partitioner->partition(N_PARTITIONS);
-
-  //       // Calculate edge-cut / balance
-  //       uint32_t edges_cut;
-  //       vector<uint32_t> balance;
-  //       tie(edges_cut, balance) = partitioner->calculate_edge_cut(g);
-  //       // LOG: REPARTITION Timestamp nVertices nMovements nEdges nEdgesCut
-  //       // vVerticesEachPartition
-  //       stats_file << "REPARTITION " << new_timestamp << ' '
-  //                  << boost::num_vertices(g) << ' ' << boost::num_edges(g)
-  //                  << ' ' << movements_to_repartition << ' ' << edges_cut
-  //                  << ' ';
-  //       for (int i = 0; i < N_PARTITIONS; ++i)
-  //         stats_file << balance[i] << ' ';
-  //       stats_file << endl;
-  //     }
-  //     assert(new_timestamp >= timestamp_log);
-  //     if (new_timestamp - timestamp_log > TIME_GAP_LOG) {
-  //       stats_file << "POINT " << cross_partition_edge_access << ' '
-  //                  << same_partition_edge_access << ' ' << new_timestamp <<
-  //                  '
-  //                  ';
-  //       for (int i = 0; i < N_PARTITIONS; ++i)
-  //         stats_file << partitioner->m_balance[i] << ' ';
-  //       stats_file << endl;
-  //       same_partition_edge_access = cross_partition_edge_access = 0;
-  //       timestamp_log = new_timestamp;
-  //     }
-  //     break;
-  //   }
-
-  //   case 'T': {
-  //     involved_vertices.clear();
-  //     vector<pair<uint32_t, uint32_t>> involved_edges;
-  //     vector<uint32_t> delete_vertices;
-  //     uint32_t author = stoi(tokens[1]);
-  //     bool tx_failed = stoi(tokens[2]);
-  //     involved_vertices.insert(author);
-  //     // tokens[1] : from
-  //     int i = 3, type;
-  //     while (i < tokens.size()) {
-  //       type = stoi(tokens[i]);
-  //       ++i;
-  //       int numCalls = stoi(tokens[i]);
-  //       ++i;
-  //       for (int j = 0; j < numCalls; ++j) {
-  //         if (tokens[i] == "1") {
-  //           ++i;
-  //           from_vertex = author;
-  //           to_vertex = stoi(tokens[i]);
-  //         } else {
-  //           from_vertex = stoi(tokens[++i]);
-  //           to_vertex = stoi(tokens[++i]);
-  //         }
-  //         if (Utils::has_value(type)) {
-  //           ++i;
-  //           // value
-  //         }
-  //         ++i;
-  //         // repetition
-  //         weight = stoi(tokens[i]);
-
-  //         // ADD edge
-  //         if (Utils::is_selfdestruct(type) && !tx_failed) {
-  //           // From: contract that was suicided
-  //           // To: Funds moved there
-  //           // Utils::remove_vertex(from_vertex, g, partitioner);
-  //           involved_vertices.insert(to_vertex);
-  //           involved_vertices.insert(from_vertex);
-  //           delete_vertices.push_back(from_vertex);
-  //         } else {
-  //           Utils::add_edge_or_update_weigth(from_vertex, to_vertex,
-  //           weight, g); involved_vertices.insert(from_vertex);
-  //           involved_vertices.insert(to_vertex);
-  //           involved_edges.push_back({from_vertex, to_vertex});
-  //         }
-  //         ++i;
-  //       }
-  //     }
-  //     partitioner->assign_partition(involved_vertices, N_PARTITIONS);
-  //     for (const auto &edge : involved_edges) {
-  //       if (!partitioner->same_partition(edge.first, edge.second)) {
-  //         ++cross_partition_edge_access;
-  //       } else {
-  //         ++same_partition_edge_access;
-  //       }
-  //     }
-  //     if (delete_vertices.size())
-  //     // cout << "REMOVE: " << delete_vertices.size() << endl;
-  //     for (const auto vtx : delete_vertices) {
-  //       // cout << "DELETE: " << vtx << endl;
-  //       if (partitioner->m_partitioning[vtx] == N_PARTITIONS)
-  //         cout << "Timestamp: " << new_timestamp << endl << "vtx: " << vtx
-  //         << endl;
-  //       Utils::remove_vertex(vtx, g, partitioner);
-  //       // cout << "vtx: " << vtx << endl;
-  //       // cout << "BALANCE: " << partitioner->m_balance[0] << ' ' <<
-  //       partitioner->m_balance[1] << endl;
-  //     }
-  //     break;
-  //   }
-  //   }
-  // }
   return 0;
 }
