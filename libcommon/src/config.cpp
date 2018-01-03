@@ -38,3 +38,14 @@ Config::Config(const std::string &input_config) {
       FILE_INPUT = std::fstream(value, std::ios::out);
   }
 }
+
+bool operator==(const VertexProperty &lhs, const VertexProperty &rhs) {
+  return lhs.m_vertex_id == lhs.m_vertex_id;
+}
+bool operator!=(const VertexProperty &lhs, const VertexProperty &rhs) {
+  return lhs.m_vertex_id != lhs.m_vertex_id;
+}
+std::ostream& operator <<(std::ostream &os, const VertexProperty &p) {
+  os << p.m_vertex_id;
+  return os;
+}

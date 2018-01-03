@@ -52,17 +52,18 @@ inline bool is_selfdestruct(int type) { return type == OPSELFDESTRUCT_TYPE; }
 
 template <typename vertex_ds>
 const uint32_t get_id(const vertex_ds &vd, const Graph &g) {
-  auto vertex_index_map = get(boost::vertex_index, g);
-  return get(vertex_index_map, vd);
+  return g[vd].m_vertex_id;
+  // auto vertex_index_map = get(boost::vertex_index, g);
+  // return get(vertex_index_map, vd);
 }
 
 template <typename vertex_id, typename weight_type, typename map_type>
 std::pair<Edge, bool>
-add_edge_or_update_weigth(const vertex_id &from, const vertex_id &to,
-                          const weight_type &weight, Graph &g,
+add_edge_or_update_weigth(const vertex_id from, const vertex_id to,
+                          const weight_type weight, Graph &g,
                           map_type &id_vertex_map) {
 
-  auto vertex_index_map = get(boost::vertex_index, g);
+  // auto vertex_index_map = get(boost::vertex_index, g);
   auto weights_map = get(boost::edge_weight, g);
 
   auto v_fr = id_vertex_map.find(from);
@@ -70,7 +71,8 @@ add_edge_or_update_weigth(const vertex_id &from, const vertex_id &to,
   Vertex fr_desc, to_desc;
   if (v_fr == id_vertex_map.end()) {
     fr_desc = boost::add_vertex(g);
-    put(vertex_index_map, fr_desc, from);
+    g[fr_desc] = VertexProperty(from);
+    // put(vertex_index_map, fr_desc, from);
     id_vertex_map.insert(v_fr, typename map_type::value_type(from, fr_desc));
   } else
     fr_desc = (*v_fr).second;
@@ -83,12 +85,13 @@ add_edge_or_update_weigth(const vertex_id &from, const vertex_id &to,
   auto v_to = id_vertex_map.find(to);
   if (v_to == id_vertex_map.end()) {
     to_desc = boost::add_vertex(g);
-    put(vertex_index_map, to_desc, to);
+    g[to_desc] = VertexProperty(to);
+    // put(vertex_index_map, to_desc, to);
     id_vertex_map.insert(v_to, typename map_type::value_type(to, to_desc));
   } else
     to_desc = (*v_to).second;
 
-  // Update weight
+  // Update edge weight
   Edge edge;
   bool edge_found;
   tie(edge, edge_found) = boost::edge(fr_desc, to_desc, g);
@@ -96,9 +99,12 @@ add_edge_or_update_weigth(const vertex_id &from, const vertex_id &to,
     auto current_weight = get(weights_map, edge);
     put(weights_map, edge, current_weight + weight);
   } else {
-    tie(edge, edge_found) = std::move(add_edge(fr_desc, to_desc, g));
+    tie(edge, edge_found) = add_edge(fr_desc, to_desc, g);
     put(weights_map, edge, weight);
   }
+  // Update vertex weight
+  ++g[boost::source(edge, g)].m_vertex_weight;
+  ++g[boost::target(edge, g)].m_vertex_weight;
   return {edge, edge_found};
 }
 
@@ -135,5 +141,16 @@ double measure_time(F func, Args &&... args) {
              (std::chrono::high_resolution_clock::now() - before))
       .count();
 }
+
+const std::unordered_set<uint32_t> pre_compiled_contracts = {
+    17596,  // 1 ecrecover
+    30877,  // 2 sha256hash
+    320152, // 3 ripemd160hash
+    9554,   // 4 dataCopy
+    698904, // 5 bigModExp
+    698905, // 6 bn256Add
+    698906, // 7 bn256ScalarMul
+    698907, // 8 bn256Pairing
+};
 
 }; // namespace Utils

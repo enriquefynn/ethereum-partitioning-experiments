@@ -191,8 +191,8 @@ int main(int argc, char **argv) {
 
       // cout << "S: " << partitioner->m_partitioning.size() << ' ' <<
       // boost::num_vertices(g) << endl;
-      if (!config.SAVE_PARTITIONING)
-        assert(partitioner->m_partitioning.size() == boost::num_vertices(g));
+      // if (!config.SAVE_PARTITIONING)
+      //   assert(partitioner->m_partitioning.size() == boost::num_vertices(g));
 
       std::unordered_set<uint32_t> partitions_involved;
       for (const auto &edge : involved_edges) {

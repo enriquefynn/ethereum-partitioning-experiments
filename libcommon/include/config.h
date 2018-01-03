@@ -1,14 +1,28 @@
 #pragma once
-#include <fstream>
+
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graph_traits.hpp>
+#include <fstream>
 
 typedef boost::property<boost::edge_weight_t, uint32_t> EdgeWeightProperty;
-typedef boost::property<boost::vertex_index_t, uint32_t> VertexProperty;
-//out edges, graph vertices, direction, vertexProp, edgeProp, edgeStorage
-typedef boost::adjacency_list<boost::hash_setS, boost::hash_setS, boost::undirectedS,
-                              VertexProperty, EdgeWeightProperty,
-                              boost::hash_setS>
+// typedef boost::property<boost::vertex_index_t, uint32_t> VertexProperty;
+
+struct VertexProperty {
+  explicit VertexProperty(const uint32_t vertex_id = 0, const uint32_t vertex_weight = 0) {
+    m_vertex_id = vertex_id;
+    m_vertex_weight = vertex_weight;
+  };
+  uint32_t m_vertex_id;
+  uint32_t m_vertex_weight;
+};
+bool operator==(const VertexProperty &lhs, const VertexProperty &rhs);
+bool operator!=(const VertexProperty &lhs, const VertexProperty &rhs);
+std::ostream& operator <<(std::ostream &os, const VertexProperty &p);
+
+// out edges, graph vertices, direction, vertexProp, edgeProp, edgeStorage
+typedef boost::adjacency_list<boost::hash_setS, boost::hash_setS,
+                              boost::undirectedS, VertexProperty,
+                              EdgeWeightProperty, boost::hash_setS>
     Graph;
 
 typedef boost::graph_traits<Graph> GraphTraits;
@@ -33,7 +47,7 @@ public:
     FACEBOOK_PARTITIONER,
     FILE_PARTITIONER
   };
-  
+
   std::string FILE_PATH;
   std::fstream FILE_INPUT;
   uint32_t N_PARTITIONS = 2;
@@ -44,5 +58,4 @@ public:
   Config() = delete;
   Config(Config const &) = delete;
   Config(Config &&) = default;
-  
 };

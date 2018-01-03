@@ -12,6 +12,7 @@ METIS_partitioner::METIS_partitioner(const Graph &graph, Config &config)
   assert(m_seed > 0);
   METIS_SetDefaultOptions(METIS_OPTIONS);
   METIS_OPTIONS[METIS_OPTION_OBJTYPE] = METIS_OBJTYPE_VOL;
+  // METIS_OPTIONS[METIS_OPTION_OBJTYPE] = METIS_OBJTYPE_CUT;
   METIS_OPTIONS[METIS_OPTION_SEED] = m_seed;
   METIS_OPTIONS[METIS_OPTION_UFACTOR] = 300;
   // METIS_OPTIONS[METIS_OPTION_DBGLVL] = 2;
@@ -47,6 +48,7 @@ uint32_t METIS_partitioner::partition(idx_t nparts) {
       (idx_t *)malloc(2 * boost::num_edges(m_graph) * sizeof(idx_t));
   idx_t *adjwgt =
       (idx_t *)malloc(2 * boost::num_edges(m_graph) * sizeof(idx_t));
+  idx_t *vwgt = (idx_t *)malloc(ncon * nvtxs * sizeof(idx_t));
   idx_t *part = (idx_t *)malloc(nvtxs * sizeof(idx_t));
 
   idx_t edge_idx = 0;
@@ -60,6 +62,7 @@ uint32_t METIS_partitioner::partition(idx_t nparts) {
   auto before = std::chrono::high_resolution_clock::now();
   for (const auto &vtx_k_v : m_config.m_id_to_vertex) {
     auto vertex_id = get_metis_id(Utils::get_id(vtx_k_v.second, m_graph));
+    vwgt[vertex_id] = m_graph[vtx_k_v.second].m_vertex_weight;
     std::vector<std::pair<uint32_t, uint32_t>> neighboors;
     for (tie(edg_it, edg_it_end) = boost::out_edges(vtx_k_v.second, m_graph);
          edg_it != edg_it_end; ++edg_it) {
@@ -128,10 +131,14 @@ uint32_t METIS_partitioner::partition(idx_t nparts) {
             (std::chrono::high_resolution_clock::now() - before))
             .count();
   LOG_INFO("Time to assign partitioning: %lld", now);
-
+  // std::sort(vwgt, vwgt + nvtxs);
+  // for (int i = 0; i < nvtxs; ++i)
+  //   std::cout << vwgt[i] << ' ';
+  //   std::cout << std::endl;
   free(xadj);
   free(adjncy);
   free(adjwgt);
+  free(vwgt);
   free(part);
 
   before = std::chrono::high_resolution_clock::now();
