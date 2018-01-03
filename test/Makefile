@@ -9,7 +9,7 @@ CPPFLAGS =
 INCLUDES = \
 	-I $(THISDIR)/../libcommon/include \
 	-I $(THISDIR)/../libutils/include \
- 	-I $(THISDIR)/../libcommon/includ \
+ 	-I $(THISDIR)/../libcommon/include \
  	-I $(THISDIR)/../libpartitioning/include
 
 LDFLAGS = \
