@@ -1,8 +1,8 @@
 #pragma once
 
 #include <iomanip>
-#include <vector>
 #include <random>
+#include <vector>
 
 #include <config.h>
 #include <partitioner.h>
@@ -21,15 +21,14 @@ class FB_partitioner : public Partitioner {
   const float CROSS_PARTITION_THRESHOLD =
       0.3; // Threshold for when trigger repartition
   const uint8_t PARTITIONING_MODE = PERIODIC_PARTITIONING;
-  std::vector<uint32_t> get_neighbors(uint32_t n_partitions);
+  std::unordered_map<uint32_t, uint32_t> get_neighbors(uint32_t n_partitions);
   std::vector<std::vector<std::vector<uint32_t>>> m_partition_vtx_to_move;
-  
+
   std::mt19937 m_gen;
   std::uniform_real_distribution<> m_dis;
-  
+
 public:
-  std::vector<std::vector<double>>
-  get_oracle_matrix(uint32_t n_partitions);
+  std::vector<std::vector<double>> get_oracle_matrix(uint32_t n_partitions);
 
   FB_partitioner(const Graph &graph, Config &config);
   void assign_partition(const std::set<uint32_t> &vertex_list, int32_t nparts);

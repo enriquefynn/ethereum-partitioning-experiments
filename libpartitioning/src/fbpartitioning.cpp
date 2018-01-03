@@ -38,11 +38,12 @@ bool FB_partitioner::trigger_partitioning(uint32_t new_timestamp,
   }
 }
 
-std::vector<uint32_t> FB_partitioner::get_neighbors(uint32_t n_partitions) {
+std::unordered_map<uint32_t, uint32_t>
+FB_partitioner::get_neighbors(uint32_t n_partitions) {
 
   out_edge_it edg_it, edg_it_end;
   Edge ed;
-  std::vector<uint32_t> partition_to_go(boost::num_vertices(m_graph));
+  std::unordered_map<uint32_t, uint32_t> partition_to_go(boost::num_vertices(m_graph));
   // For every vertex, calcuate neighbors other partitions
   for (auto vertex = boost::vertices(m_graph); vertex.first != vertex.second;
        ++vertex.first) {
@@ -105,11 +106,14 @@ FB_partitioner::get_oracle_matrix(uint32_t n_partitions) {
   auto oracle_matrix = std::vector<std::vector<double>>(
       n_partitions, std::vector<double>(n_partitions, 0.));
 
-  for (uint32_t vtx = 0; vtx < where_vtx_go.size(); ++vtx) {
-    if (m_partitioning[vtx] != where_vtx_go[vtx]) {
-      ++oracle_matrix[m_partitioning[vtx]][where_vtx_go[vtx]];
-      m_partition_vtx_to_move[m_partitioning[vtx]][where_vtx_go[vtx]].push_back(
-          vtx);
+  for (auto vertex = boost::vertices(m_graph); vertex.first != vertex.second;
+       ++vertex.first) {
+    auto vertex_id = Utils::get_id(*vertex.first, m_graph);
+    // for (uint32_t vtx = 0; vtx < where_vtx_go.size(); ++vtx) {
+    if (m_partitioning[vertex_id] != where_vtx_go[vertex_id]) {
+      ++oracle_matrix[m_partitioning[vertex_id]][where_vtx_go[vertex_id]];
+      m_partition_vtx_to_move[m_partitioning[vertex_id]][where_vtx_go[vertex_id]].push_back(
+          vertex_id);
       // std::cout << "want to go from " << m_partitioning[vtx] << " to " <<
       // where_vtx_go[vtx] << ": " << vtx << std::endl;
     }
