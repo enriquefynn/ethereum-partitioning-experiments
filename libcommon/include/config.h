@@ -38,7 +38,7 @@ typedef GraphTraits::out_edge_iterator out_edge_it;
 
 class Config {
 public:
-  std::map<uint32_t, Vertex> m_id_to_vertex;
+  // std::map<uint32_t, Vertex> m_id_to_vertex;
 
   enum {
     HASH_PARTITIONER,
@@ -53,6 +53,7 @@ public:
   uint32_t N_PARTITIONS = 2;
   uint8_t PARTITIONING_MODE = HASH_PARTITIONER;
   bool SAVE_PARTITIONING = false;
+
   Config(const std::string &config_file);
 
   Config() = delete;

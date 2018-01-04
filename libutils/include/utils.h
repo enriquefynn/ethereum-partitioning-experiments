@@ -99,7 +99,7 @@ add_edge_or_update_weigth(const vertex_id from, const vertex_id to,
     auto current_weight = get(weights_map, edge);
     put(weights_map, edge, current_weight + weight);
   } else {
-    tie(edge, edge_found) = add_edge(fr_desc, to_desc, g);
+    tie(edge, edge_found) = std::move(add_edge(fr_desc, to_desc, g));
     put(weights_map, edge, weight);
   }
   // Update vertex weight
@@ -109,14 +109,14 @@ add_edge_or_update_weigth(const vertex_id from, const vertex_id to,
 }
 
 template <typename vertex_id, typename map_type>
-void remove_vertex(vertex_id from, Graph &g, Partitioner *p,
+void remove_vertex(vertex_id from, Graph &g, Partitioner &p,
                    map_type &id_vertex_map) {
   auto v_fr = id_vertex_map.find(from);
   if (v_fr == id_vertex_map.end())
     return;
   assert(v_fr != id_vertex_map.end());
   auto delete_vertex = (*v_fr).second;
-  p->remove_vertex(from);
+  p.remove_vertex(from);
   // std::cout << "REMOVE: " << delete_vertex << std::endl;
   boost::clear_vertex(delete_vertex, g);
   boost::remove_vertex(delete_vertex, g);

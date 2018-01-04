@@ -60,7 +60,7 @@ uint32_t METIS_partitioner::partition(idx_t nparts) {
   // for (vertex = boost::vertices(m_graph); vertex.first != vertex.second;
   //    ++vertex.first) {
   auto before = std::chrono::high_resolution_clock::now();
-  for (const auto &vtx_k_v : m_config.m_id_to_vertex) {
+  for (const auto &vtx_k_v : m_id_to_vertex) {
     auto vertex_id = get_metis_id(Utils::get_id(vtx_k_v.second, m_graph));
     vwgt[vertex_id] = m_graph[vtx_k_v.second].m_vertex_weight;
     std::vector<std::pair<uint32_t, uint32_t>> neighboors;

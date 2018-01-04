@@ -15,8 +15,10 @@ protected:
   uint32_t m_last_partitioning_time; // For saving the next partitioning
 
 public:
+std::map<uint32_t, Vertex> m_id_to_vertex;
   std::unordered_map<uint32_t, uint32_t> m_partitioning;
   std::vector<uint32_t> m_balance;
+  
   Partitioner(int32_t seed, const Graph &graph, Config &config)
       : m_seed(seed), m_graph(graph), m_config(config),
         m_last_partitioning_time(0), m_balance(m_config.N_PARTITIONS, 0){};
@@ -44,7 +46,7 @@ public:
 
     --m_balance[m_partitioning[vtx]];
     m_partitioning.erase(vtx);
-    m_config.m_id_to_vertex.erase(vtx);
+    m_id_to_vertex.erase(vtx);
   }
 
   template <typename map_type>

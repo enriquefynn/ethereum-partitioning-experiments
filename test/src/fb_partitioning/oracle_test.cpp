@@ -21,6 +21,7 @@ protected:
 
     partitioning = std::unique_ptr<map_type>(
         new map_type());
+    partitioner = std::unique_ptr<FB_partitioner>(new FB_partitioner(*g, *config));
 
     std::ifstream test_graph("./test/src/fb_partitioning/test_graph.txt",
                              std::ifstream::in);
@@ -28,7 +29,7 @@ protected:
     test_graph >> n_edges;
     for (int i = 0; i < n_edges; ++i) {
       test_graph >> fr >> to;
-      Utils::add_edge_or_update_weigth(fr, to, 1, *g, (*config).m_id_to_vertex);
+      Utils::add_edge_or_update_weigth(fr, to, 1, *g, partitioner->m_id_to_vertex);
     }
     test_graph >> n_vtx;
     for (int i = 0; i < n_vtx; ++i) {
@@ -44,14 +45,14 @@ protected:
   std::unique_ptr<Graph> g;
   std::unique_ptr<map_type> partitioning;
   std::unique_ptr<Config> config;
+  std::unique_ptr<FB_partitioner> partitioner;
 };
 
 TEST_F(OracleTest, matrixTest) {
 
-  auto fb_partitioner = FB_partitioner(*g, *config);
-  fb_partitioner.define_partitioning(std::move(*partitioning));
+  partitioner->define_partitioning(std::move(*partitioning));
 
-  auto matrix = fb_partitioner.get_oracle_matrix(4);
+  auto matrix = partitioner->get_oracle_matrix(4);
 
   std::vector<std::vector<double>> v({{0, 5 / 7., 1, 0},
                                       {1, 0, 1, 2 / 3.},

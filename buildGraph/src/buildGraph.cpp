@@ -15,6 +15,7 @@
 #include <file_partitioning.h>
 #include <hash_partitioning.h>
 #include <utils.h>
+#include <helpers.h>
 
 using namespace std;
 
@@ -22,35 +23,7 @@ int main(int argc, char **argv) {
   bool DEBUG = false;
   Graph g;
   Config config = Config(argv[2]);
-
-  Partitioner *partitioner;
-  switch (config.PARTITIONING_MODE) {
-  case config.HASH_PARTITIONER:
-    cout << "Using Hash partitioner";
-    partitioner = new Hash_partitioner(g, config);
-    break;
-  case config.METIS_PARTITIONER:
-    cout << "Using METIS partitioner";
-    partitioner = new METIS_partitioner(g, config);
-    break;
-  case config.HMETIS_PARTITIONER:
-    cout << "Using Hyper-METIS partitioner";
-    partitioner = new HMETIS_partitioner(g, config);
-    break;
-  case config.FACEBOOK_PARTITIONER:
-    cout << "Using Facebook partitioner";
-    partitioner = new FB_partitioner(g, config);
-    break;
-  case config.FILE_PARTITIONER:
-    cout << "Using File partitioner";
-    partitioner = new File_partitioner(g, config);
-    break;
-
-  default:
-    assert(false);
-    break;
-  }
-  cout << ' ' << config.N_PARTITIONS << " partitions" << endl;
+  auto partitioner = GraphHelpers::get_partitioner(g, config);
 
   ifstream calls_file(argv[1]);
   ofstream stats_file("/tmp/edge_cut_evolution_partitions_" +
@@ -86,7 +59,7 @@ int main(int argc, char **argv) {
     calls_file >> to_vertex >> tx_value;
     involved_vertices.insert(to_vertex);
     Utils::add_edge_or_update_weigth(0u, to_vertex, 1, g,
-                                     config.m_id_to_vertex);
+                                     partitioner->m_id_to_vertex);
   }
   partitioner->assign_partition(involved_vertices, config.N_PARTITIONS);
   // End Genesis processing
@@ -113,7 +86,7 @@ int main(int argc, char **argv) {
           std::chrono::duration_cast<std::chrono::milliseconds>(
               (std::chrono::high_resolution_clock::now() - before))
               .count();
-      cout << "Partitioning took: " << time_to_partition << "ms\n";
+      LOG_INFO("Partitioning took: %lldms", time_to_partition);
       // Calculate edge-cut / balance
       uint32_t edges_cut;
 
@@ -171,28 +144,13 @@ int main(int argc, char **argv) {
             // From: contract that was suicided
             // To: Funds moved there
             delete_vertices.push_back(from_vertex);
-            // continue;
           }
-          // cout << "Previous graph size: " << boost::num_vertices(g) << endl;
-          // cout << "Add edge(" << from_vertex << "," << to_vertex << "), new g
-          // size: " << boost::num_vertices(g) << " part size: " <<
-          // partitioner->m_partitioning.size() << endl;
-
           Utils::add_edge_or_update_weigth(from_vertex, to_vertex, weight, g,
-                                           config.m_id_to_vertex);
-          // cout << "Added edge(" << from_vertex << "," << to_vertex << "), new
-          // g size: " << boost::num_vertices(g) << " part size: " <<
-          // partitioner->m_partitioning.size() << endl; cout << "Add " <<
-          // from_vertex << " to " << to_vertex << endl;
+                                           partitioner->m_id_to_vertex);
           involved_edges.push_back({from_vertex, to_vertex});
         }
       }
       partitioner->assign_partition(involved_vertices, config.N_PARTITIONS);
-
-      // cout << "S: " << partitioner->m_partitioning.size() << ' ' <<
-      // boost::num_vertices(g) << endl;
-      // if (!config.SAVE_PARTITIONING)
-      //   assert(partitioner->m_partitioning.size() == boost::num_vertices(g));
 
       std::unordered_set<uint32_t> partitions_involved;
       for (const auto &edge : involved_edges) {
@@ -212,13 +170,7 @@ int main(int argc, char **argv) {
       }
 
       for (const auto vtx : delete_vertices) {
-        // cout << "DELETE: " << vtx << endl;
-        // cout << "SIZES: " << partitioner->m_partitioning.size() << ' ' <<
-        // boost::num_vertices(g) << endl;
-        Utils::remove_vertex(vtx, g, partitioner, config.m_id_to_vertex);
-        // cout << "SIZES: " << partitioner->m_partitioning.size() << ' ' <<
-        // boost::num_vertices(g) << endl;
-        // assert(partitioner->m_partitioning.size() == boost::num_vertices(g));
+        Utils::remove_vertex(vtx, g, *partitioner, partitioner->m_id_to_vertex);
       }
     }
   }
