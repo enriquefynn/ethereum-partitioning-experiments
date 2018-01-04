@@ -142,15 +142,25 @@ double measure_time(F func, Args &&... args) {
       .count();
 }
 
-const std::unordered_set<uint32_t> pre_compiled_contracts = {
-    17596,  // 1 ecrecover
-    30877,  // 2 sha256hash
-    320152, // 3 ripemd160hash
-    9554,   // 4 dataCopy
-    698904, // 5 bigModExp
-    698905, // 6 bn256Add
-    698906, // 7 bn256ScalarMul
-    698907, // 8 bn256Pairing
-};
+void LOG_REPARTITION(std::ofstream &stats_file, const Graph &graph,
+                     uint32_t timestamp, uint32_t movements_to_repartition,
+                     uint32_t edges_cut, const std::vector<uint32_t> &balance);
+
+void LOG_POINT(std::ofstream &stats_file, const Graph &graph,
+               uint32_t cross_partition_tx_access,
+               uint32_t same_partition_tx_access, uint32_t new_timestamp,
+               const std::vector<uint32_t> &txs_per_partition,
+               const std::unique_ptr<Partitioner> &partitioner);
+
+// const std::unordered_set<uint32_t> pre_compiled_contracts = {
+//     17596,  // 1 ecrecover
+//     30877,  // 2 sha256hash
+//     320152, // 3 ripemd160hash
+//     9554,   // 4 dataCopy
+//     698904, // 5 bigModExp
+//     698905, // 6 bn256Add
+//     698906, // 7 bn256ScalarMul
+//     698907, // 8 bn256Pairing
+// };
 
 }; // namespace Utils

@@ -50,6 +50,8 @@ public:
 
   std::string FILE_PATH;
   std::fstream FILE_INPUT;
+  std::string GRAPH_SIZE_EVOLUTION_PATH;
+
   uint32_t N_PARTITIONS = 2;
   uint8_t PARTITIONING_MODE = HASH_PARTITIONER;
   bool SAVE_PARTITIONING = false;

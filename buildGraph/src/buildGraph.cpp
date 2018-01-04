@@ -6,16 +6,11 @@
 #include <unordered_set>
 #include <vector>
 
-#include <metis.h>
-
-#include <HMETIS_methods.h>
-#include <METIS_methods.h>
 #include <config.h>
-#include <fbpartitioning.h>
-#include <file_partitioning.h>
-#include <hash_partitioning.h>
-#include <utils.h>
 #include <helpers.h>
+#include <metis.h>
+#include <statistics.h>
+#include <utils.h>
 
 using namespace std;
 
@@ -24,6 +19,7 @@ int main(int argc, char **argv) {
   Graph g;
   Config config = Config(argv[2]);
   auto partitioner = GraphHelpers::get_partitioner(g, config);
+  Statistics statistics(config);
 
   ifstream calls_file(argv[1]);
   ofstream stats_file("/tmp/edge_cut_evolution_partitions_" +
@@ -92,24 +88,16 @@ int main(int argc, char **argv) {
 
       vector<uint32_t> balance;
       tie(edges_cut, balance) = partitioner->calculate_edge_cut(g);
-      // LOG: REPARTITION Timestamp nVertices nMovements nEdges nEdgesCut
-      // vVerticesEachPartition
-      stats_file << "REPARTITION " << new_timestamp << ' '
-                 << boost::num_vertices(g) << ' ' << boost::num_edges(g) << ' '
-                 << movements_to_repartition << ' ' << edges_cut << ' ';
-      for (int i = 0; i < config.N_PARTITIONS; ++i)
-        stats_file << balance[i] << ' ';
-      stats_file << endl;
+      Utils::LOG_REPARTITION(stats_file, g, new_timestamp,
+                             movements_to_repartition, edges_cut, balance);
     }
 
     assert(new_timestamp >= timestamp_log);
     if (new_timestamp - timestamp_log > TIME_GAP_LOG) {
-      stats_file << "POINT " << cross_partition_tx_access << ' '
-                 << same_partition_tx_access << ' ' << new_timestamp << ' ';
-      for (int i = 0; i < config.N_PARTITIONS; ++i)
-        stats_file << partitioner->m_balance[i] << ' ' << txs_per_partition[i]
-                   << ' ';
-      stats_file << endl;
+      Utils::LOG_POINT(stats_file, g, cross_partition_tx_access,
+                       same_partition_tx_access, new_timestamp,
+                       txs_per_partition, partitioner);
+
       same_partition_tx_access = cross_partition_tx_access = 0;
       std::fill(txs_per_partition.begin(), txs_per_partition.end(), 0);
       timestamp_log = new_timestamp;
@@ -173,6 +161,8 @@ int main(int argc, char **argv) {
         Utils::remove_vertex(vtx, g, *partitioner, partitioner->m_id_to_vertex);
       }
     }
+    statistics.log_graph_size(new_timestamp, boost::num_vertices(g),
+                              boost::num_edges(g));
   }
   return 0;
 }

@@ -28,6 +28,8 @@ Config::Config(const std::string &input_config) {
       FILE_PATH = value;
     } else if (key == "N_PARTITIONS") {
       N_PARTITIONS = std::stoul(value);
+    } else if (key == "GRAPH_SIZE_EVOLUTION_PATH") {
+      GRAPH_SIZE_EVOLUTION_PATH = value;
     } else
       assert(false);
   }
@@ -45,7 +47,7 @@ bool operator==(const VertexProperty &lhs, const VertexProperty &rhs) {
 bool operator!=(const VertexProperty &lhs, const VertexProperty &rhs) {
   return lhs.m_vertex_id != lhs.m_vertex_id;
 }
-std::ostream& operator <<(std::ostream &os, const VertexProperty &p) {
+std::ostream &operator<<(std::ostream &os, const VertexProperty &p) {
   os << p.m_vertex_id;
   return os;
 }

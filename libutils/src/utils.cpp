@@ -5,43 +5,31 @@
 // #include <file_partitioning.h>
 // #include <hash_partitioning.h>
 // #include <log.h>
-// #include <utils.h>
+#include <utils.h>
 
-// namespace Utils {
-// std::unique_ptr<Partitioner> get_partitioner(const Graph &graph,
-//                                              Config &config) {
-//   std::unique_ptr<Partitioner> partitioner;
-//   switch (config.PARTITIONING_MODE) {
-//   case Config::HASH_PARTITIONER:
-//     LOG_INFO("Using Hash partitioner");
-//     partitioner =
-//         std::unique_ptr<Partitioner>(new Hash_partitioner(graph, config));
-//     break;
-//   case Config::METIS_PARTITIONER:
-//     LOG_INFO("Using METIS partitioner");
-//     partitioner =
-//         std::unique_ptr<Partitioner>(new METIS_partitioner(graph, config));
-//     break;
-//   case Config::HMETIS_PARTITIONER:
-//     LOG_INFO("Using Hyper-METIS partitioner");
-//     partitioner =
-//         std::unique_ptr<Partitioner>(new HMETIS_partitioner(graph, config));
-//     break;
-//   case Config::FACEBOOK_PARTITIONER:
-//     LOG_INFO("Using Facebook partitioner");
-//     partitioner =
-//         std::unique_ptr<Partitioner>(new FB_partitioner(graph, config));
-//     break;
-//   case Config::FILE_PARTITIONER:
-//     LOG_INFO("Using File partitioner");
-//     partitioner =
-//         std::unique_ptr<Partitioner>(new File_partitioner(graph, config));
-//     break;
+namespace Utils {
+void LOG_REPARTITION(std::ofstream &stats_file, const Graph &graph,
+                     uint32_t timestamp, uint32_t movements_to_repartition,
+                     uint32_t edges_cut, const std::vector<uint32_t> &balance) {
+  stats_file << "REPARTITION " << timestamp << ' ' << boost::num_vertices(graph)
+             << ' ' << boost::num_edges(graph) << ' '
+             << movements_to_repartition << ' ' << edges_cut << ' ';
+  for (int i = 0; i < balance.size(); ++i)
+    stats_file << balance[i] << ' ';
+  stats_file << '\n';
+}
 
-//   default:
-//     assert(false);
-//     break;
-//   }
-//   return partitioner;
-// }
-// } // namespace Utils
+void LOG_POINT(std::ofstream &stats_file, const Graph &graph,
+               uint32_t cross_partition_tx_access,
+               uint32_t same_partition_tx_access, uint32_t new_timestamp,
+               const std::vector<uint32_t> &txs_per_partition,
+               const std::unique_ptr<Partitioner> &partitioner) {
+  stats_file << "POINT " << cross_partition_tx_access << ' '
+             << same_partition_tx_access << ' ' << new_timestamp << ' ';
+  for (int i = 0; i < partitioner->m_balance.size(); ++i)
+    stats_file << partitioner->m_balance[i] << ' ' << txs_per_partition[i]
+               << ' ';
+  stats_file << '\n';
+}
+
+} // namespace Utils
