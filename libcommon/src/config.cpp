@@ -31,6 +31,8 @@ Config::Config(const std::string &input_config) {
       N_PARTITIONS = std::stoul(value);
     } else if (key == "GRAPH_SIZE_EVOLUTION_PATH") {
       GRAPH_SIZE_EVOLUTION_PATH = value;
+    } else if (key == "GRAPH_CC_PATH") {
+      GRAPH_CC_PATH = value;
     } else if (key == "AVOID_PRECOMPILED") {
       AVOID_PRECOMPILED = (value == "true") ? true : false;
     } else
@@ -69,7 +71,7 @@ std::ostream &operator<<(std::ostream &os, const Config &c) {
   os << "partitioning\n";
   os << c.N_PARTITIONS << " partitions\n";
   if (c.SAVE_PARTITIONING)
-    os << "Saving to " << c.FILE_PATH << '\n';
+    os << "Saving/using partitioning file " << c.FILE_PATH << '\n';
   os << "Graph size path: "
      << ((c.GRAPH_SIZE_EVOLUTION_PATH == "") ? "NULL"
                                              : c.GRAPH_SIZE_EVOLUTION_PATH);

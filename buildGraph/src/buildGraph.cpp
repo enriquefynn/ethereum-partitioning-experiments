@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
   Config config = Config(argv[2]);
   cout << config;
   auto partitioner = GraphHelpers::get_partitioner(g, config);
-  Statistics statistics(config);
+  Statistics statistics(config, g);
 
   std::ifstream calls_file(argv[1]);
   std::ofstream stats_file("/tmp/edge_cut_evolution_partitions_" +
@@ -173,8 +173,7 @@ int main(int argc, char **argv) {
         Utils::remove_vertex(vtx, g, *partitioner, partitioner->m_id_to_vertex);
       }
     }
-    statistics.log_graph_size(new_timestamp, boost::num_vertices(g),
-                              boost::num_edges(g));
+    statistics.log(new_timestamp);
   }
   return 0;
 }
