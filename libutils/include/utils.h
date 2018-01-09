@@ -8,14 +8,6 @@
 
 #include <partitioner.h>
 
-#define CREATE_TYPE 0
-#define CALL_TYPE 1
-#define CALLCODE_TYPE 2
-#define DELEGATECALL_TYPE 3
-#define STATICCALL_TYPE 4
-#define PRECOMPILED_TYPE 5
-#define OPSELFDESTRUCT_TYPE 6
-
 namespace Utils {
 template <typename map_type>
 void assign_hash_partition(map_type &partitioning,
@@ -45,10 +37,10 @@ void assign_hash_partition(map_type &partitioning,
 }
 
 inline bool has_value(int type) {
-  return (type == CALL_TYPE) || (type == CREATE_TYPE) ||
-         (type == CALLCODE_TYPE) || type == (OPSELFDESTRUCT_TYPE);
+  return (type == Config::CALL_TYPE) || (type == Config::CREATE_TYPE) ||
+         (type == Config::CALLCODE_TYPE) || type == (Config::OPSELFDESTRUCT_TYPE);
 }
-inline bool is_selfdestruct(int type) { return type == OPSELFDESTRUCT_TYPE; }
+inline bool is_selfdestruct(int type) { return type == Config::OPSELFDESTRUCT_TYPE; }
 
 template <typename vertex_ds>
 const uint32_t get_id(const vertex_ds &vd, const Graph &g) {
@@ -162,5 +154,9 @@ void LOG_POINT(std::ofstream &stats_file, const Graph &graph,
 //     698906, // 7 bn256ScalarMul
 //     698907, // 8 bn256Pairing
 // };
+
+inline bool is_precompiled(uint32_t tx_type) {
+  return tx_type == Config::PRECOMPILED_TYPE;
+}
 
 }; // namespace Utils

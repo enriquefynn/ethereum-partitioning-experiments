@@ -18,7 +18,7 @@ public:
 std::map<uint32_t, Vertex> m_id_to_vertex;
   std::unordered_map<uint32_t, uint32_t> m_partitioning;
   std::vector<uint32_t> m_balance;
-  
+
   Partitioner(int32_t seed, const Graph &graph, Config &config)
       : m_seed(seed), m_graph(graph), m_config(config),
         m_last_partitioning_time(0), m_balance(m_config.N_PARTITIONS, 0){};
@@ -63,7 +63,7 @@ std::map<uint32_t, Vertex> m_id_to_vertex;
   }
 
   // Edges cut, vertices in each partitioning partitioning.size()
-  const std::tuple<uint32_t, std::vector<uint32_t>>
+  virtual const std::tuple<uint32_t, std::vector<uint32_t>>
   calculate_edge_cut(const Graph &g);
 
   inline bool same_partition(uint32_t v1, uint32_t v2) const {

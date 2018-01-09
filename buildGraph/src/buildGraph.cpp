@@ -12,20 +12,26 @@
 #include <statistics.h>
 #include <utils.h>
 
-using namespace std;
+using std::string;
+using std::set;
+using std::pair;
+using std::cout;
+using std::endl;
+using std::vector;
 
 int main(int argc, char **argv) {
   bool DEBUG = false;
   Graph g;
   Config config = Config(argv[2]);
+  cout << config;
   auto partitioner = GraphHelpers::get_partitioner(g, config);
   Statistics statistics(config);
 
-  ifstream calls_file(argv[1]);
-  ofstream stats_file("/tmp/edge_cut_evolution_partitions_" +
-                      to_string(config.N_PARTITIONS) + "_period_" +
-                      to_string(TIME_GAP_LOG) + "_" + partitioner->get_name() +
-                      +".txt");
+  std::ifstream calls_file(argv[1]);
+  std::ofstream stats_file("/tmp/edge_cut_evolution_partitions_" +
+                           std::to_string(config.N_PARTITIONS) + "_period_" +
+                           std::to_string(TIME_GAP_LOG) + "_" +
+                           partitioner->get_name() + +".txt");
 
   uint32_t lineN, timestamp_log, new_timestamp;
   uint32_t from_vertex, to_vertex, weight;
@@ -126,6 +132,8 @@ int main(int argc, char **argv) {
           if (has_value)
             calls_file >> tx_value;
           calls_file >> weight;
+          if (Utils::is_precompiled(tx_type) && config.AVOID_PRECOMPILED)
+            continue;
           involved_vertices.insert(from_vertex);
           involved_vertices.insert(to_vertex);
           if (Utils::is_selfdestruct(tx_type) && !tx_failed) {
@@ -138,8 +146,12 @@ int main(int argc, char **argv) {
           involved_edges.push_back({from_vertex, to_vertex});
         }
       }
-      partitioner->assign_partition(involved_vertices, config.N_PARTITIONS);
-
+      try {
+        partitioner->assign_partition(involved_vertices, config.N_PARTITIONS);
+      } catch (const std::logic_error &e) {
+        cout << e.what() << endl;
+        return 0;
+      }
       std::unordered_set<uint32_t> partitions_involved;
       for (const auto &edge : involved_edges) {
         auto fr_p = partitioner->m_partitioning[edge.first];

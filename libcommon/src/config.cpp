@@ -2,7 +2,8 @@
 #include <iomanip>
 #include <sstream>
 
-#include "config.h"
+#include <config.h>
+#include <log.h>
 
 Config::Config(const std::string &input_config) {
   std::ifstream config_file(input_config);
@@ -30,6 +31,8 @@ Config::Config(const std::string &input_config) {
       N_PARTITIONS = std::stoul(value);
     } else if (key == "GRAPH_SIZE_EVOLUTION_PATH") {
       GRAPH_SIZE_EVOLUTION_PATH = value;
+    } else if (key == "AVOID_PRECOMPILED") {
+      AVOID_PRECOMPILED = (value == "true") ? true : false;
     } else
       assert(false);
   }
@@ -49,5 +52,28 @@ bool operator!=(const VertexProperty &lhs, const VertexProperty &rhs) {
 }
 std::ostream &operator<<(std::ostream &os, const VertexProperty &p) {
   os << p.m_vertex_id;
+  return os;
+}
+std::ostream &operator<<(std::ostream &os, const Config &c) {
+  os << ANSI_COLOR_RED << "Using ";
+  if (c.PARTITIONING_MODE == Config::HASH_PARTITIONER)
+    os << "Hash ";
+  else if (c.PARTITIONING_MODE == Config::HMETIS_PARTITIONER)
+    os << "HMETIS ";
+  else if (c.PARTITIONING_MODE == Config::METIS_PARTITIONER)
+    os << "METIS ";
+  else if (c.PARTITIONING_MODE == Config::FACEBOOK_PARTITIONER)
+    os << "Facebook ";
+  else if (c.PARTITIONING_MODE == Config::FILE_PARTITIONER)
+    os << "File ";
+  os << "partitioning\n";
+  os << c.N_PARTITIONS << " partitions\n";
+  if (c.SAVE_PARTITIONING)
+    os << "Saving to " << c.FILE_PATH << '\n';
+  os << "Graph size path: "
+     << ((c.GRAPH_SIZE_EVOLUTION_PATH == "") ? "NULL"
+                                             : c.GRAPH_SIZE_EVOLUTION_PATH);
+  os << "\nAVOID PRECOMPILED "
+     << ((c.AVOID_PRECOMPILED) ? "true\n" : "false\n");
   return os;
 }

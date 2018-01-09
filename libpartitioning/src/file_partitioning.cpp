@@ -35,19 +35,28 @@ uint32_t File_partitioner::partition(int32_t n_partitions) {
   assert(m_partitioning.size() == 0);
 
   m_partitioning_file >> n_vertices;
+  for (int i = 0; i < m_config.N_PARTITIONS; ++i)
+    m_balance[i] = 0;
   for (int i = 0; i < n_vertices; ++i) {
     m_partitioning_file >> vertex >> part;
     m_partitioning[vertex] = part;
+    ++m_balance[part];
   }
   m_partitioning_file >> m_partitioning_epoch;
   return 0;
   // return calculate_movements_repartition(old_partitioning, n_partitions);
 }
 
-// // Hash partitioning for new vertexes
-// void File_partitioner::assign_partition(const std::set<uint32_t>
-// &vertex_list,
-//                                       int32_t n_partitions) {
-//   Utils::assign_hash_partition(m_partitioning, m_balance, vertex_list,
-//                                n_partitions);
-// }
+const std::tuple<uint32_t, std::vector<uint32_t>>
+  File_partitioner::calculate_edge_cut(const Graph &g) {
+  typename GraphTraits::edge_iterator ei, ei_end;
+  uint32_t edges_cut = 0;
+
+  for (tie(ei, ei_end) = edges(g); ei != ei_end; ++ei) {
+    auto source_id = Utils::get_id(boost::source(*ei, g), m_graph);
+    auto target_id = Utils::get_id(boost::target(*ei, g), m_graph);
+    if (m_partitioning[source_id] != m_partitioning[target_id])
+      ++edges_cut;
+  }
+  return {edges_cut, m_balance};
+  }

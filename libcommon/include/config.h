@@ -8,7 +8,8 @@ typedef boost::property<boost::edge_weight_t, uint32_t> EdgeWeightProperty;
 // typedef boost::property<boost::vertex_index_t, uint32_t> VertexProperty;
 
 struct VertexProperty {
-  explicit VertexProperty(const uint32_t vertex_id = 0, const uint32_t vertex_weight = 0) {
+  explicit VertexProperty(const uint32_t vertex_id = 0,
+                          const uint32_t vertex_weight = 0) {
     m_vertex_id = vertex_id;
     m_vertex_weight = vertex_weight;
   };
@@ -17,7 +18,7 @@ struct VertexProperty {
 };
 bool operator==(const VertexProperty &lhs, const VertexProperty &rhs);
 bool operator!=(const VertexProperty &lhs, const VertexProperty &rhs);
-std::ostream& operator <<(std::ostream &os, const VertexProperty &p);
+std::ostream &operator<<(std::ostream &os, const VertexProperty &p);
 
 // out edges, graph vertices, direction, vertexProp, edgeProp, edgeStorage
 typedef boost::adjacency_list<boost::hash_setS, boost::hash_setS,
@@ -48,6 +49,16 @@ public:
     FILE_PARTITIONER
   };
 
+  enum {
+    CREATE_TYPE,
+    CALL_TYPE,
+    CALLCODE_TYPE,
+    DELEGATECALL_TYPE,
+    STATICCALL_TYPE,
+    PRECOMPILED_TYPE,
+    OPSELFDESTRUCT_TYPE
+  };
+
   std::string FILE_PATH;
   std::fstream FILE_INPUT;
   std::string GRAPH_SIZE_EVOLUTION_PATH;
@@ -55,6 +66,7 @@ public:
   uint32_t N_PARTITIONS = 2;
   uint8_t PARTITIONING_MODE = HASH_PARTITIONER;
   bool SAVE_PARTITIONING = false;
+  bool AVOID_PRECOMPILED = false;
 
   Config(const std::string &config_file);
 
@@ -62,3 +74,4 @@ public:
   Config(Config const &) = delete;
   Config(Config &&) = default;
 };
+std::ostream &operator<<(std::ostream &os, const Config &c);
