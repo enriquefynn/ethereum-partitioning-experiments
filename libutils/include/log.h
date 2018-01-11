@@ -27,8 +27,8 @@
 
 #pragma once
 
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 
 #define UNUSED __attribute__((unused))
 
@@ -50,22 +50,25 @@
 #define ANSI_COLOR_RESET
 #endif
 
-#define __BASEFILE__                                                                                                   \
-  (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1                                                                 \
-                          : strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
+#define __BASEFILE__                                                           \
+  (strrchr(__FILE__, '/')                                                      \
+       ? strrchr(__FILE__, '/') + 1                                            \
+       : strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
 
 #if defined(DEBUG) && DEBUG > 0
-#define LOG_DEBUG(fmt, args...)                                                                                        \
-  fprintf(stdout, ANSI_COLOR_RESET "DEBUG: %s:%d:%s(): " fmt "\n", __BASEFILE__, __LINE__, __func__, ##args)
+#define LOG_DEBUG(fmt, args...)                                                \
+  fprintf(stdout, ANSI_COLOR_RESET "DEBUG: %s:%d:%s(): " fmt "\n",             \
+          __BASEFILE__, __LINE__, __func__, ##args)
 #else
 #define LOG_DEBUG(fmt, args...) /* Don't do anything in release builds */
 #endif
 
-#define LOG_INFO(fmt, args...)                                                                                         \
-  fprintf(stderr, ANSI_COLOR_GREEN "INFO:  %s:%d:%s(): " fmt "\n" ANSI_COLOR_RESET, __BASEFILE__, __LINE__, __func__,  \
-          ##args)
+#define LOG_INFO(fmt, args...)                                                 \
+  fprintf(stderr,                                                              \
+          ANSI_COLOR_GREEN "INFO:  %s:%d:%s(): " fmt "\n" ANSI_COLOR_RESET,    \
+          __BASEFILE__, __LINE__, __func__, ##args)
 
-#define LOG_ERROR(fmt, args...)                                                                                        \
-  fprintf(stderr, ANSI_COLOR_RED "ERROR: %s:%d:%s(): " fmt "\n" ANSI_COLOR_RESET, __BASEFILE__, __LINE__, __func__,    \
-          ##args)
-
+#define LOG_ERROR(fmt, args...)                                                \
+  fprintf(stderr,                                                              \
+          ANSI_COLOR_RED "ERROR: %s:%d:%s(): " fmt "\n" ANSI_COLOR_RESET,      \
+          __BASEFILE__, __LINE__, __func__, ##args)

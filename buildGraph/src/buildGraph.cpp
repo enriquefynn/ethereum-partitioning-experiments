@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
   Config config = Config(argv[2]);
   cout << config;
   auto partitioner = GraphHelpers::get_partitioner(g, config);
-  Statistics statistics(config, g);
+  Statistics statistics(g, config);
 
   std::ifstream calls_file(argv[1]);
   std::ofstream stats_file("/tmp/edge_cut_evolution_partitions_" +
@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
     calls_file >> to_vertex >> tx_value;
     involved_vertices.insert(to_vertex);
     Utils::add_edge_or_update_weigth(0u, to_vertex, 1, g,
-                                     partitioner->m_id_to_vertex);
+                                     partitioner->m_id_to_vertex, statistics);
   }
   partitioner->assign_partition(involved_vertices, config.N_PARTITIONS);
   // End Genesis processing
@@ -142,7 +142,8 @@ int main(int argc, char **argv) {
             delete_vertices.push_back(from_vertex);
           }
           Utils::add_edge_or_update_weigth(from_vertex, to_vertex, weight, g,
-                                           partitioner->m_id_to_vertex);
+                                           partitioner->m_id_to_vertex,
+                                           statistics);
           involved_edges.push_back({from_vertex, to_vertex});
         }
       }

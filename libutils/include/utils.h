@@ -1,12 +1,13 @@
 #pragma once
 
 #include <chrono>
-#include <config.h>
 #include <set>
 #include <utility>
 #include <vector>
 
+#include <config.h>
 #include <partitioner.h>
+#include <statistics.h>
 
 namespace Utils {
 template <typename map_type>
@@ -38,9 +39,12 @@ void assign_hash_partition(map_type &partitioning,
 
 inline bool has_value(int type) {
   return (type == Config::CALL_TYPE) || (type == Config::CREATE_TYPE) ||
-         (type == Config::CALLCODE_TYPE) || type == (Config::OPSELFDESTRUCT_TYPE);
+         (type == Config::CALLCODE_TYPE) ||
+         type == (Config::OPSELFDESTRUCT_TYPE);
 }
-inline bool is_selfdestruct(int type) { return type == Config::OPSELFDESTRUCT_TYPE; }
+inline bool is_selfdestruct(int type) {
+  return type == Config::OPSELFDESTRUCT_TYPE;
+}
 
 template <typename vertex_ds>
 const uint32_t get_id(const vertex_ds &vd, const Graph &g) {
@@ -53,7 +57,7 @@ template <typename vertex_id, typename weight_type, typename map_type>
 std::pair<Edge, bool>
 add_edge_or_update_weigth(const vertex_id from, const vertex_id to,
                           const weight_type weight, Graph &g,
-                          map_type &id_vertex_map) {
+                          map_type &id_vertex_map, Statistics &statistics) {
 
   // auto vertex_index_map = get(boost::vertex_index, g);
   auto weights_map = get(boost::edge_weight, g);
@@ -97,6 +101,10 @@ add_edge_or_update_weigth(const vertex_id from, const vertex_id to,
   // Update vertex weight
   ++g[boost::source(edge, g)].m_vertex_weight;
   ++g[boost::target(edge, g)].m_vertex_weight;
+
+  // Statistics
+  statistics.add_edge(fr_desc, to_desc);
+
   return {edge, edge_found};
 }
 
