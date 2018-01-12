@@ -49,5 +49,5 @@ void Statistics::add_edge(const Vertex &from, const Vertex &to) {
     m_rank.push_back(0);
     m_parent.push_back(i);
   }
-  p_union(idx_from, idx_to);
+  p_union(idx_from, idx_to);gzzi
 }
