@@ -4,7 +4,7 @@
 #include <HMETIS_methods.h>
 #include <METIS_methods.h>
 #include <config.h>
-#include <fbpartitioning.h>
+#include <fb_partitioning.h>
 #include <file_partitioning.h>
 #include <hash_partitioning.h>
 

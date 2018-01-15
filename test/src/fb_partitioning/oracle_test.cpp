@@ -1,7 +1,7 @@
 
 #include <gtest/gtest.h>
 
-#include <fbpartitioning.h>
+#include <fb_partitioning.h>
 #include <fstream>
 #include <unordered_map>
 #include <utils.h>

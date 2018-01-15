@@ -2,20 +2,31 @@
 
 #include <config.h>
 #include <iostream>
+#include <log.h>
 #include <set>
 #include <unordered_map>
 #include <vector>
-#include <log.h>
 
 class Partitioner {
 protected:
   const int32_t m_seed;
   const Graph &m_graph;
   Config &m_config;
+
+  uint32_t m_total_calls = 0;
   uint32_t m_last_partitioning_time; // For saving the next partitioning
+  uint32_t m_timestamp_last_repartition = 0;
+  uint32_t m_timestamp_last_check = 0;
+  uint32_t m_cross_partition_calls;
+
+  const uint32_t TIME_REPARTITION = 60 * 60 * 24 * 15;       // 15 days
+  const uint32_t TIME_REPARTITION_WINDOW = 60 * 60 * 24 * 2; // 2 days
+  const float CROSS_PARTITION_THRESHOLD =
+      0.3; // Threshold for when trigger repartition
+  const uint8_t PARTITIONING_MODE = PERIODIC_PARTITIONING;
 
 public:
-std::map<uint32_t, Vertex> m_id_to_vertex;
+  std::map<uint32_t, Vertex> m_id_to_vertex;
   std::unordered_map<uint32_t, uint32_t> m_partitioning;
   std::vector<uint32_t> m_balance;
 
@@ -26,7 +37,7 @@ std::map<uint32_t, Vertex> m_id_to_vertex;
   virtual uint32_t partition(int32_t n_part) = 0;
   virtual bool trigger_partitioning(uint32_t new_timestamp,
                                     uint32_t cross_edge_access,
-                                    uint32_t same_partition_edge_access) = 0;
+                                    uint32_t same_partition_edge_access);
   virtual std::string get_name() = 0;
 
   virtual void assign_partition(const std::set<uint32_t> &vertex_list,

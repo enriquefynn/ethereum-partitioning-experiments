@@ -29,7 +29,7 @@ void Partitioner::assign_partition(const std::set<uint32_t> &vertex_list,
   }
   for (auto vertex = needs_partitioning; vertex != vertex_list.end();
        ++vertex) {
-    //assert(*vertex == m_partitioning.size());
+    // assert(*vertex == m_partitioning.size());
     // Cannot find good partition to put
     if (is_same) {
       auto most_unbalanced_partition =
@@ -65,4 +65,36 @@ Partitioner::calculate_edge_cut(const Graph &g) {
   }
 
   return make_tuple(edges_cut, m_balance);
+}
+
+bool Partitioner::trigger_partitioning(uint32_t new_timestamp,
+                                  uint32_t cross_edge_access,
+                                  uint32_t same_partition_edge_access) {
+  if (PARTITIONING_MODE == DYNAMIC_PARTITIONING) {
+    m_cross_partition_calls += static_cast<float>(cross_edge_access);
+    m_total_calls +=
+        static_cast<float>(cross_edge_access + same_partition_edge_access);
+    if (new_timestamp - m_timestamp_last_check > TIME_REPARTITION_WINDOW) {
+      if (new_timestamp - m_timestamp_last_repartition > TIME_REPARTITION) {
+        if ((m_cross_partition_calls / m_total_calls) > CROSS_PARTITION_THRESHOLD) {
+          m_last_partitioning_time = m_timestamp_last_repartition;
+          m_timestamp_last_repartition = new_timestamp;
+          return true;
+        }
+      }
+      m_cross_partition_calls = 0;
+      m_total_calls = 0;
+      m_timestamp_last_check = new_timestamp;
+    }
+    return false;
+  } else if (PARTITIONING_MODE == PERIODIC_PARTITIONING) {
+    if (new_timestamp - m_timestamp_last_repartition > TIME_REPARTITION) {
+      m_last_partitioning_time = m_timestamp_last_repartition;
+      m_timestamp_last_repartition = new_timestamp;
+      return true;
+    }
+    return false;
+  } else {
+    assert(false);
+  }
 }

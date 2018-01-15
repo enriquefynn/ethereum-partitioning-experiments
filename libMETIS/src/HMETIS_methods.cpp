@@ -103,38 +103,6 @@ uint32_t HMETIS_partitioner::partition(int nparts) {
   return calculate_movements_repartition(old_partitioning, nparts);
 }
 
-bool HMETIS_partitioner::trigger_partitioning(
-    uint32_t new_timestamp, uint32_t cross_edge_access,
-    uint32_t same_partition_edge_access) {
-  if (PARTITIONING_MODE == DYNAMIC_PARTITIONING) {
-    cross_partition_calls += static_cast<float>(cross_edge_access);
-    total_calls +=
-        static_cast<float>(cross_edge_access + same_partition_edge_access);
-    if (new_timestamp - timestamp_last_check > TIME_REPARTITION_WINDOW) {
-      if (new_timestamp - timestamp_last_repartition > TIME_REPARTITION) {
-        if ((cross_partition_calls / total_calls) > CROSS_PARTITION_THRESHOLD) {
-          m_last_partitioning_time = timestamp_last_repartition;
-          timestamp_last_repartition = new_timestamp;
-          return true;
-        }
-      }
-      cross_partition_calls = 0;
-      total_calls = 0;
-      timestamp_last_check = new_timestamp;
-    }
-    return false;
-  } else if (PARTITIONING_MODE == PERIODIC_PARTITIONING) {
-    if (new_timestamp - timestamp_last_repartition > TIME_REPARTITION) {
-      m_last_partitioning_time = timestamp_last_repartition;
-      timestamp_last_repartition = new_timestamp;
-      return true;
-    }
-    return false;
-  } else {
-    assert(false);
-  }
-}
-
 void HMETIS_partitioner::assign_partition(const std::set<uint32_t> &vertex_list,
                                           int32_t nparts) {
   Partitioner::assign_partition(vertex_list, nparts);
