@@ -85,4 +85,6 @@ public:
       assert(false);
     }
   }
+
+  virtual void terminate() {}
 };

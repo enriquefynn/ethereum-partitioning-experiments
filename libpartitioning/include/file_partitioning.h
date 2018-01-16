@@ -20,8 +20,10 @@ public:
 
   void assign_partition(const std::set<uint32_t> &vertex_list, int32_t nparts) {
     for (auto const vtx : vertex_list) {
-      if (!m_partitioning.count(vtx))
+      if (!m_partitioning.count(vtx)) {
+        LOG_INFO("%d missing", vtx);
         throw std::logic_error("Last partitioning reached in File partitioner");
+      }
       if (!new_vertices.count(vtx)) {
         ++m_balance[m_partitioning[vtx]];
         new_vertices.insert(vtx);

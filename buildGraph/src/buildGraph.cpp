@@ -176,5 +176,6 @@ int main(int argc, char **argv) {
     }
     statistics.log(new_timestamp);
   }
+  partitioner->terminate();
   return 0;
 }
