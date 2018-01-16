@@ -49,20 +49,11 @@ public:
     m_partitioning = std::move(new_partitioning);
   }
 
-  virtual void remove_vertex(uint32_t vtx) {
-    // std::cout << "SIZE: " << m_partitioning.size() << std::endl;
-    // assert(vtx < m_partitioning.size());
-    assert(m_partitioning[vtx] < m_config.N_PARTITIONS);
-    assert(m_balance[m_partitioning[vtx]] > 0);
+  virtual void remove_vertex(uint32_t vtx);
 
-    --m_balance[m_partitioning[vtx]];
-    m_partitioning.erase(vtx);
-    m_id_to_vertex.erase(vtx);
-  }
-
-  template <typename map_type>
-  const uint32_t calculate_movements_repartition(map_type &old_partitioning,
-                                                 int32_t nparts) const {
+  virtual const uint32_t calculate_movements_repartition(
+      const std::unordered_map<uint32_t, uint32_t> &old_partitioning,
+      int32_t nparts) const {
     uint32_t moves = 0;
     assert(m_partitioning.size() == old_partitioning.size());
 

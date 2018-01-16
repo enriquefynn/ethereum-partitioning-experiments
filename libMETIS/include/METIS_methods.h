@@ -13,14 +13,11 @@
 #define METIS_SEED 1
 
 class METIS_partitioner : public Partitioner {
-  std::unordered_map<uint32_t, uint32_t> m_saved_partitioning;
 
 public:
   idx_t METIS_OPTIONS[METIS_NOPTIONS];
   METIS_partitioner(Graph &graph, Config &config);
   uint32_t partition(idx_t nparts);
-
-  void assign_partition(const std::set<uint32_t> &vertex_list, int32_t nparts);
 
   std::string get_name();
 

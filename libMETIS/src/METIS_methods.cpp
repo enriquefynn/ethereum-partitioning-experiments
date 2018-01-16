@@ -123,8 +123,6 @@ uint32_t METIS_partitioner::partition(idx_t nparts) {
   assert(m_partitioning.size() == 0);
   for (int i = 0; i < nvtxs; ++i) {
     m_partitioning[from_metis_vtx[i]] = part[i];
-    if (m_config.SAVE_PARTITIONING)
-      m_saved_partitioning[from_metis_vtx[i]] = part[i];
   }
 
   now = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -141,30 +139,9 @@ uint32_t METIS_partitioner::partition(idx_t nparts) {
   free(vwgt);
   free(part);
 
-  before = std::chrono::high_resolution_clock::now();
-  Utils::save_partitioning(m_saved_partitioning, m_last_partitioning_time,
-                           m_config.FILE_INPUT, m_config.SAVE_PARTITIONING);
-
-  now = std::chrono::duration_cast<std::chrono::milliseconds>(
-            (std::chrono::high_resolution_clock::now() - before))
-            .count();
-  LOG_INFO("Time to save partitioning: %lld", now);
-
   LOG_INFO("End partitioning");
   return calculate_movements_repartition(old_partitioning, nparts);
 }
-
-void METIS_partitioner::assign_partition(const std::set<uint32_t> &vertex_list,
-                                         int32_t nparts) {
-  Partitioner::assign_partition(vertex_list, nparts);
-  // Build graph to save
-  if (m_config.SAVE_PARTITIONING) {
-    for (auto const &vertex : vertex_list) {
-      m_saved_partitioning[vertex] = m_partitioning[vertex];
-    }
-  }
-}
-
 std::string METIS_partitioner::get_name() {
 
   std::stringstream stream;

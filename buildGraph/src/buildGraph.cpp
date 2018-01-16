@@ -171,7 +171,7 @@ int main(int argc, char **argv) {
       }
 
       for (const auto vtx : delete_vertices) {
-        Utils::remove_vertex(vtx, g, *partitioner, partitioner->m_id_to_vertex);
+        partitioner->remove_vertex(vtx);
       }
     }
     statistics.log(new_timestamp);

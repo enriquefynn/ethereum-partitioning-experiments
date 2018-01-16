@@ -32,9 +32,16 @@ public:
   }
 
   void remove_vertex(uint32_t vtx) {
-    // std::cout << "SIZE: " << m_partitioning.size() << std::endl;
-    // assert(vtx < m_partitioning.size());
+    assert(m_partitioning[vtx] < m_config.N_PARTITIONS);
     assert(m_balance[m_partitioning[vtx]] > 0);
+
+    auto v_fr = m_id_to_vertex.find(vtx);
+    if (v_fr == m_id_to_vertex.end())
+      return;
+    auto delete_vertex = (*v_fr).second;
+    // std::cout << "REMOVE: " << delete_vertex << std::endl;
+    boost::clear_vertex(delete_vertex, m_graph);
+    boost::remove_vertex(delete_vertex, m_graph);
 
     --m_balance[m_partitioning[vtx]];
     m_id_to_vertex.erase(vtx);

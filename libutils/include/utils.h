@@ -108,26 +108,10 @@ add_edge_or_update_weigth(const vertex_id from, const vertex_id to,
   return {edge, edge_found};
 }
 
-template <typename vertex_id, typename map_type>
-void remove_vertex(vertex_id from, Graph &g, Partitioner &p,
-                   map_type &id_vertex_map) {
-  auto v_fr = id_vertex_map.find(from);
-  if (v_fr == id_vertex_map.end())
-    return;
-  assert(v_fr != id_vertex_map.end());
-  auto delete_vertex = (*v_fr).second;
-  p.remove_vertex(from);
-  // std::cout << "REMOVE: " << delete_vertex << std::endl;
-  boost::clear_vertex(delete_vertex, g);
-  boost::remove_vertex(delete_vertex, g);
-}
-
 template <typename map_type>
 void save_partitioning(map_type &partitioning, uint32_t epoch,
-                       std::fstream &partitioning_file,
-                       bool save_partitioning) {
-  if (!save_partitioning)
-    return;
+                       std::fstream &partitioning_file) {
+
   partitioning_file << epoch << ' ' << partitioning.size() << std::endl;
   for (const auto &p : partitioning)
     partitioning_file << p.first << ' ' << p.second << std::endl;

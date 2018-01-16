@@ -68,15 +68,16 @@ Partitioner::calculate_edge_cut(const Graph &g) {
 }
 
 bool Partitioner::trigger_partitioning(uint32_t new_timestamp,
-                                  uint32_t cross_edge_access,
-                                  uint32_t same_partition_edge_access) {
+                                       uint32_t cross_edge_access,
+                                       uint32_t same_partition_edge_access) {
   if (PARTITIONING_MODE == DYNAMIC_PARTITIONING) {
     m_cross_partition_calls += static_cast<float>(cross_edge_access);
     m_total_calls +=
         static_cast<float>(cross_edge_access + same_partition_edge_access);
     if (new_timestamp - m_timestamp_last_check > TIME_REPARTITION_WINDOW) {
       if (new_timestamp - m_timestamp_last_repartition > TIME_REPARTITION) {
-        if ((m_cross_partition_calls / m_total_calls) > CROSS_PARTITION_THRESHOLD) {
+        if ((m_cross_partition_calls / m_total_calls) >
+            CROSS_PARTITION_THRESHOLD) {
           m_last_partitioning_time = m_timestamp_last_repartition;
           m_timestamp_last_repartition = new_timestamp;
           return true;
@@ -97,4 +98,23 @@ bool Partitioner::trigger_partitioning(uint32_t new_timestamp,
   } else {
     assert(false);
   }
+}
+
+void Partitioner::remove_vertex(uint32_t vtx) {
+  // std::cout << "SIZE: " << m_partitioning.size() << std::endl;
+  // assert(vtx < m_partitioning.size());
+  assert(m_partitioning[vtx] < m_config.N_PARTITIONS);
+  assert(m_balance[m_partitioning[vtx]] > 0);
+
+  auto v_fr = m_id_to_vertex.find(vtx);
+  if (v_fr == m_id_to_vertex.end())
+    return;
+  auto delete_vertex = (*v_fr).second;
+  // std::cout << "REMOVE: " << delete_vertex << std::endl;
+  boost::clear_vertex(delete_vertex, m_graph);
+  boost::remove_vertex(delete_vertex, m_graph);
+
+  --m_balance[m_partitioning[vtx]];
+  m_partitioning.erase(vtx);
+  m_id_to_vertex.erase(vtx);
 }
