@@ -6,17 +6,16 @@
 #include <utils.h>
 
 File_partitioner::File_partitioner(Graph &graph, Config &config)
-    : Partitioner(0, graph, config), m_partitioning_file(config.FILE_PATH),
-      m_partitioning_epoch(0) {
+    : Partitioner(0, graph, config), m_partitioning_epoch(0) {
   assert(m_config.SAVE_PARTITIONING);
 
   uint32_t n_vertices, part, vertex;
-  m_partitioning_file >> m_partitioning_epoch >> n_vertices;
+  m_config.FILE_INPUT >> m_partitioning_epoch >> n_vertices;
   for (int i = 0; i < n_vertices; ++i) {
-    m_partitioning_file >> vertex >> part;
+    m_config.FILE_INPUT >> vertex >> part;
     m_partitioning[vertex] = part;
   }
-  m_partitioning_file >> m_partitioning_epoch;
+  m_config.FILE_INPUT >> m_partitioning_epoch;
 }
 
 bool File_partitioner::trigger_partitioning(
@@ -34,21 +33,21 @@ uint32_t File_partitioner::partition(int32_t n_partitions) {
   auto old_partitioning = std::move(m_partitioning);
   assert(m_partitioning.size() == 0);
 
-  m_partitioning_file >> n_vertices;
+  m_config.FILE_INPUT >> n_vertices;
   for (int i = 0; i < m_config.N_PARTITIONS; ++i)
     m_balance[i] = 0;
   for (int i = 0; i < n_vertices; ++i) {
-    m_partitioning_file >> vertex >> part;
+    m_config.FILE_INPUT >> vertex >> part;
     m_partitioning[vertex] = part;
     ++m_balance[part];
   }
-  m_partitioning_file >> m_partitioning_epoch;
+  m_config.FILE_INPUT >> m_partitioning_epoch;
   return 0;
   // return calculate_movements_repartition(old_partitioning, n_partitions);
 }
 
 const std::tuple<uint32_t, std::vector<uint32_t>>
-  File_partitioner::calculate_edge_cut(const Graph &g) {
+File_partitioner::calculate_edge_cut(const Graph &g) {
   typename GraphTraits::edge_iterator ei, ei_end;
   uint32_t edges_cut = 0;
 
@@ -59,4 +58,4 @@ const std::tuple<uint32_t, std::vector<uint32_t>>
       ++edges_cut;
   }
   return {edges_cut, m_balance};
-  }
+}

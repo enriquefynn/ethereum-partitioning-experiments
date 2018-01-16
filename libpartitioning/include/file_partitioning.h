@@ -11,7 +11,6 @@
 
 class File_partitioner : public Partitioner {
 private:
-  std::ifstream m_partitioning_file;
   uint32_t m_partitioning_epoch;
   std::unordered_set<uint32_t> new_vertices;
 
