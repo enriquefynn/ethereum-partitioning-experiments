@@ -7,7 +7,7 @@
 #include <partitioner.h>
 #include <utils.h>
 
-METIS_partitioner::METIS_partitioner(const Graph &graph, Config &config)
+METIS_partitioner::METIS_partitioner(Graph &graph, Config &config)
     : Partitioner(METIS_SEED, graph, config) {
   assert(m_seed > 0);
   METIS_SetDefaultOptions(METIS_OPTIONS);

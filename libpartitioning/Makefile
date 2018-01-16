@@ -9,6 +9,7 @@ INCLUDES = \
 LDFLAGS = \
 	-L /usr/local/lib \
 	-L $(THISDIR)/../libutils/bin \
+	-L $(THISDIR)/../libMETIS/bin \
 	-lutils
 
 include ../Makefile.lib

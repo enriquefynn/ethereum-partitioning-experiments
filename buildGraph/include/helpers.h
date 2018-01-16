@@ -6,10 +6,11 @@
 #include <config.h>
 #include <fb_partitioning.h>
 #include <file_partitioning.h>
+#include <future_partitioning.h>
 #include <hash_partitioning.h>
 
 namespace GraphHelpers {
-std::unique_ptr<Partitioner> get_partitioner(const Graph &graph,
+std::unique_ptr<Partitioner> get_partitioner(Graph &graph,
                                              Config &config) {
   std::unique_ptr<Partitioner> partitioner;
   switch (config.PARTITIONING_MODE) {
@@ -32,6 +33,10 @@ std::unique_ptr<Partitioner> get_partitioner(const Graph &graph,
   case Config::FILE_PARTITIONER:
     partitioner =
         std::unique_ptr<Partitioner>(new File_partitioner(graph, config));
+    break;
+  case Config::FUTURE_PARTITIONER:
+    partitioner =
+        std::unique_ptr<Partitioner>(new Future_partitioner(graph, config));
     break;
   default:
     assert(false);

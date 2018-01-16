@@ -33,7 +33,7 @@ class HMETIS_partitioner : public Partitioner {
 public:
   const int METIS_UBFACTOR = 5;
   int METIS_OPTIONS[9];
-  HMETIS_partitioner(const Graph &graph, Config &config);
+  HMETIS_partitioner(Graph &graph, Config &config);
   uint32_t partition(int nparts);
 
   void assign_partition(const std::set<uint32_t> &vertex_list, int32_t nparts);

@@ -5,7 +5,7 @@
 #include <file_partitioning.h>
 #include <utils.h>
 
-File_partitioner::File_partitioner(const Graph &graph, Config &config)
+File_partitioner::File_partitioner(Graph &graph, Config &config)
     : Partitioner(0, graph, config), m_partitioning_file(config.FILE_PATH),
       m_partitioning_epoch(0) {
   assert(m_config.SAVE_PARTITIONING);

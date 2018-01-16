@@ -1,5 +1,5 @@
 THISDIR := $(realpath .)
-LIBRARY = libMETIS.so
+LIBRARY = libmetismethods.so
 UNAME    := $(shell uname)
 CPPFLAGS = 
 INCLUDES = \

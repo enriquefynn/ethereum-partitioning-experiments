@@ -10,7 +10,7 @@
 class Partitioner {
 protected:
   const int32_t m_seed;
-  const Graph &m_graph;
+  Graph &m_graph;
   Config &m_config;
 
   uint32_t m_total_calls = 0;
@@ -30,7 +30,7 @@ public:
   std::unordered_map<uint32_t, uint32_t> m_partitioning;
   std::vector<uint32_t> m_balance;
 
-  Partitioner(int32_t seed, const Graph &graph, Config &config)
+  Partitioner(int32_t seed, Graph &graph, Config &config)
       : m_seed(seed), m_graph(graph), m_config(config),
         m_last_partitioning_time(0), m_balance(m_config.N_PARTITIONS, 0){};
 

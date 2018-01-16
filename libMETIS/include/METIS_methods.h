@@ -1,4 +1,5 @@
 #pragma once
+
 #include <cassert>
 #include <iostream>
 #include <metis.h>
@@ -16,7 +17,7 @@ class METIS_partitioner : public Partitioner {
 
 public:
   idx_t METIS_OPTIONS[METIS_NOPTIONS];
-  METIS_partitioner(const Graph &graph, Config &config);
+  METIS_partitioner(Graph &graph, Config &config);
   uint32_t partition(idx_t nparts);
 
   void assign_partition(const std::set<uint32_t> &vertex_list, int32_t nparts);

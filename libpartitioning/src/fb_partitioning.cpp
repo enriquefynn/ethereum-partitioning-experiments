@@ -5,7 +5,7 @@
 #include <fb_partitioning.h>
 #include <utils.h>
 
-FB_partitioner::FB_partitioner(const Graph &graph, Config &config)
+FB_partitioner::FB_partitioner(Graph &graph, Config &config)
     : Partitioner(FACEBOOK_SEED, graph, config), m_gen(FACEBOOK_SEED) {}
 
 std::unordered_map<uint32_t, uint32_t>

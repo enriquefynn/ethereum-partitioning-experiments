@@ -5,6 +5,7 @@ all:
 	make -C libcommon all
 	make -C libpartitioning all
 	make -C libMETIS all
+	make -C libfuture all
 	make -C buildGraph all
 	make -C test all
 

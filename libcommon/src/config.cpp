@@ -22,6 +22,8 @@ Config::Config(const std::string &input_config) {
         PARTITIONING_MODE = FACEBOOK_PARTITIONER;
       else if (value == "FILE")
         PARTITIONING_MODE = FILE_PARTITIONER;
+      else if (value == "FUTURE")
+        PARTITIONING_MODE = FUTURE_PARTITIONER;
       else
         assert(false);
     } else if (key == "FILEPATH") {
@@ -68,6 +70,8 @@ std::ostream &operator<<(std::ostream &os, const Config &c) {
     os << "Facebook ";
   else if (c.PARTITIONING_MODE == Config::FILE_PARTITIONER)
     os << "File ";
+  else if (c.PARTITIONING_MODE == Config::FUTURE_PARTITIONER)
+    os << "Future ";
   os << "partitioning\n";
   os << c.N_PARTITIONS << " partitions\n";
   if (c.SAVE_PARTITIONING)

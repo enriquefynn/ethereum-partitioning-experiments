@@ -16,7 +16,7 @@ private:
   std::unordered_set<uint32_t> new_vertices;
 
 public:
-  File_partitioner(const Graph &graph, Config &config);
+  File_partitioner(Graph &graph, Config &config);
 
   void assign_partition(const std::set<uint32_t> &vertex_list, int32_t nparts) {
     for (auto const vtx : vertex_list) {

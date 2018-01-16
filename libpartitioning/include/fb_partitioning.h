@@ -19,7 +19,7 @@ class FB_partitioner : public Partitioner {
 public:
   std::vector<std::vector<double>> get_oracle_matrix(uint32_t n_partitions);
 
-  FB_partitioner(const Graph &graph, Config &config);
+  FB_partitioner(Graph &graph, Config &config);
   void assign_partition(const std::set<uint32_t> &vertex_list, int32_t nparts);
 
   uint32_t partition(int32_t n_partitions);
