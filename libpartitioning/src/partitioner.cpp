@@ -70,14 +70,16 @@ Partitioner::calculate_edge_cut(const Graph &g) {
 bool Partitioner::trigger_partitioning(uint32_t new_timestamp,
                                        uint32_t cross_edge_access,
                                        uint32_t same_partition_edge_access) {
-  if (PARTITIONING_MODE == DYNAMIC_PARTITIONING) {
+  if (m_config.PARTITIONING_MODE == Config::DYNAMIC_PARTITIONING) {
     m_cross_partition_calls += static_cast<float>(cross_edge_access);
     m_total_calls +=
         static_cast<float>(cross_edge_access + same_partition_edge_access);
-    if (new_timestamp - m_timestamp_last_check > TIME_REPARTITION_WINDOW) {
-      if (new_timestamp - m_timestamp_last_repartition > TIME_REPARTITION) {
-        if ((m_cross_partition_calls / m_total_calls) >
-            CROSS_PARTITION_THRESHOLD) {
+    if (new_timestamp - m_timestamp_last_check > m_config.TIME_REPARTITION_WINDOW) {
+      if (new_timestamp - m_timestamp_last_repartition > m_config.TIME_REPARTITION) {
+        if (!m_cross_partition_calls && !m_total_calls)
+          return false;
+        if ((static_cast<float>(m_cross_partition_calls) / static_cast<float>(m_total_calls)) >
+            m_config.CROSS_PARTITION_THRESHOLD) {
           m_last_partitioning_time = m_timestamp_last_repartition;
           m_timestamp_last_repartition = new_timestamp;
           return true;
@@ -88,8 +90,8 @@ bool Partitioner::trigger_partitioning(uint32_t new_timestamp,
       m_timestamp_last_check = new_timestamp;
     }
     return false;
-  } else if (PARTITIONING_MODE == PERIODIC_PARTITIONING) {
-    if (new_timestamp - m_timestamp_last_repartition > TIME_REPARTITION) {
+  } else if (m_config.PARTITIONING_MODE == Config::PERIODIC_PARTITIONING) {
+    if (new_timestamp - m_timestamp_last_repartition > m_config.TIME_REPARTITION) {
       m_last_partitioning_time = m_timestamp_last_repartition;
       m_timestamp_last_repartition = new_timestamp;
       return true;

@@ -19,12 +19,6 @@ protected:
   uint32_t m_timestamp_last_check = 0;
   uint32_t m_cross_partition_calls;
 
-  const uint32_t TIME_REPARTITION = 60 * 60 * 24 * 15;       // 15 days
-  const uint32_t TIME_REPARTITION_WINDOW = 60 * 60 * 24 * 2; // 2 days
-  const float CROSS_PARTITION_THRESHOLD =
-      0.3; // Threshold for when trigger repartition
-  const uint8_t PARTITIONING_MODE = PERIODIC_PARTITIONING;
-
 public:
   std::map<uint32_t, Vertex> m_id_to_vertex;
   std::unordered_map<uint32_t, uint32_t> m_partitioning;

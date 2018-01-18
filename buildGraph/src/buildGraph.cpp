@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
           std::chrono::duration_cast<std::chrono::milliseconds>(
               (std::chrono::high_resolution_clock::now() - before))
               .count();
-      LOG_DEBUG("Partitioning took: %lldms", time_to_partition);
+      LOG_INFO("Partitioning took: %lldms", time_to_partition);
       // Calculate edge-cut / balance
       uint32_t edges_cut;
 

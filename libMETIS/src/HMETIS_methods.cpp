@@ -123,16 +123,16 @@ void HMETIS_partitioner::assign_partition(const std::set<uint32_t> &vertex_list,
 
 std::string HMETIS_partitioner::get_name() {
   std::stringstream stream;
-  stream << std::fixed << std::setprecision(2) << CROSS_PARTITION_THRESHOLD;
+  stream << std::fixed << std::setprecision(2) << m_config.CROSS_PARTITION_THRESHOLD;
   std::string threshold = stream.str();
 
   std::string METIS_mode =
-      "HMETIS_" + ((PARTITIONING_MODE == PERIODIC_PARTITIONING)
+      "HMETIS_" + ((m_config.PARTITIONING_MODE == Config::PERIODIC_PARTITIONING)
                        ? "PERIODIC_"
                        : "DYNAMIC_" + threshold + "_WINDOW_" +
-                             std::to_string(TIME_REPARTITION_WINDOW) + "_");
+                             std::to_string(m_config.TIME_REPARTITION_WINDOW) + "_");
 
-  return METIS_mode + "repart_" + std::to_string(TIME_REPARTITION) + "_seed_" +
+  return METIS_mode + "repart_" + std::to_string(m_config.TIME_REPARTITION) + "_seed_" +
          std::to_string(METIS_SEED);
 }
 

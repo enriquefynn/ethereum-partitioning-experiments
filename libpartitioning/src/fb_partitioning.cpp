@@ -174,14 +174,14 @@ void FB_partitioner::assign_partition(const std::set<uint32_t> &vertex_list,
 
 std::string FB_partitioner::get_name() {
   std::stringstream stream;
-  stream << std::fixed << std::setprecision(2) << CROSS_PARTITION_THRESHOLD;
+  stream << std::fixed << std::setprecision(2) << m_config.CROSS_PARTITION_THRESHOLD;
   std::string threshold = stream.str();
   std::string partitioning_mode =
-      (PARTITIONING_MODE == PERIODIC_PARTITIONING)
+      (m_config.PARTITIONING_MODE == Config::PERIODIC_PARTITIONING)
           ? "PERIODIC_"
           : "DYNAMIC_" + threshold + "_WINDOW_" +
-                std::to_string(TIME_REPARTITION_WINDOW) + "_";
+                std::to_string(m_config.TIME_REPARTITION_WINDOW) + "_";
 
   return "FACEBOOK_" + partitioning_mode + "repart_" +
-         std::to_string(TIME_REPARTITION) + "_seed_" + std::to_string(m_seed);
+         std::to_string(m_config.TIME_REPARTITION) + "_seed_" + std::to_string(m_seed);
 }

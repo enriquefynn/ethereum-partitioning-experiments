@@ -32,9 +32,6 @@ typedef Graph::vertex_descriptor Vertex;
 typedef Graph::edge_descriptor Edge;
 typedef GraphTraits::out_edge_iterator out_edge_it;
 
-#define PERIODIC_PARTITIONING 0
-#define DYNAMIC_PARTITIONING 1
-
 #define TIME_GAP_LOG 60 * 60 * 4 // 4 hours
 
 class Config {
@@ -48,6 +45,11 @@ public:
     FACEBOOK_PARTITIONER,
     FILE_PARTITIONER,
     FUTURE_PARTITIONER
+  };
+
+  enum {
+    PERIODIC_PARTITIONING,
+    DYNAMIC_PARTITIONING
   };
 
   enum {
@@ -69,6 +71,11 @@ public:
   uint8_t PARTITIONING_MODE = HASH_PARTITIONER;
   bool SAVE_PARTITIONING = false;
   bool AVOID_PRECOMPILED = false;
+
+  uint32_t TIME_REPARTITION = 60 * 60 * 24 * 15;       // 15 days
+  uint32_t TIME_REPARTITION_WINDOW = 60 * 60 * 24 * 2; // 2 days
+  float CROSS_PARTITION_THRESHOLD = 0.3; // Threshold for when trigger repartition
+  uint8_t PARTITIONING_TYPE = PERIODIC_PARTITIONING;
 
   Config(const std::string &config_file);
 

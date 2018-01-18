@@ -26,6 +26,19 @@ Config::Config(const std::string &input_config) {
         PARTITIONING_MODE = FUTURE_PARTITIONER;
       else
         assert(false);
+    } else if (key == "TIME_REPARTITION") {
+      TIME_REPARTITION = std::stoul(value);
+    } else if (key == "TIME_REPARTITION_WINDOW") {
+      TIME_REPARTITION_WINDOW = std::stoul(value);
+    } else if (key == "CROSS_PARTITION_THRESHOLD") {
+      CROSS_PARTITION_THRESHOLD = std::stof(value);
+    } else if (key == "PARTITIONING_TYPE") {
+      if (value == "PERIODIC_PARTITIONING")
+        PARTITIONING_TYPE = PERIODIC_PARTITIONING;
+      else if (value == "DYNAMIC_PARTITIONING")
+        PARTITIONING_TYPE = DYNAMIC_PARTITIONING;
+      else
+        assert(false);
     } else if (key == "FILEPATH") {
       SAVE_PARTITIONING = true;
       FILE_PATH = value;
