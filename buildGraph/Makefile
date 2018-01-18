@@ -28,7 +28,13 @@ LDFLAGS = \
 
 ifeq ($(UNAME), Linux)
     LDFLAGS += \
-    -lmetis
+    -lmetis \
+		-Wl,-rpath,/home/fynn/.local/lib \
+		-Wl,-rpath,$(THISDIR)/../libMETIS/bin \
+		-Wl,-rpath,$(THISDIR)/../libcommon/bin \
+		-Wl,-rpath,$(THISDIR)/../libutils/bin \
+		-Wl,-rpath,$(THISDIR)/../libfuture/bin \
+		-Wl,-rpath,$(THISDIR)/../libpartitioning/bin
 endif
 
 include ../Makefile.exe
