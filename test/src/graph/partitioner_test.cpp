@@ -1,4 +1,4 @@
-
+#define NOLOG
 #include <gtest/gtest.h>
 
 #include <boost/graph/graph_utility.hpp>

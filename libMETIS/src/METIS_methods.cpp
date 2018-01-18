@@ -19,7 +19,7 @@ METIS_partitioner::METIS_partitioner(Graph &graph, Config &config)
 }
 
 uint32_t METIS_partitioner::partition(idx_t nparts) {
-  LOG_INFO("Begin partitioning");
+  LOG_DEBUG("Begin partitioning");
   auto weight_map = boost::get(boost::edge_weight, m_graph);
 
   std::unordered_map<uint32_t, idx_t> to_metis_vtx;
@@ -80,7 +80,7 @@ uint32_t METIS_partitioner::partition(idx_t nparts) {
   auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
                  (std::chrono::high_resolution_clock::now() - before))
                  .count();
-  LOG_INFO("Time to construct metagraph: %lld", now);
+  LOG_DEBUG("Time to construct metagraph: %lld", now);
   before = std::chrono::high_resolution_clock::now();
   for (idx_t vertex = 0; vertex < transformed_graph.size(); ++vertex, ++v_idx) {
     for (auto const &neighboor : transformed_graph[vertex]) {
@@ -93,7 +93,7 @@ uint32_t METIS_partitioner::partition(idx_t nparts) {
   now = std::chrono::duration_cast<std::chrono::milliseconds>(
             (std::chrono::high_resolution_clock::now() - before))
             .count();
-  LOG_INFO("Time to construct METIS graph: %lld", now);
+  LOG_DEBUG("Time to construct METIS graph: %lld", now);
   before = std::chrono::high_resolution_clock::now();
 
   idx_t objval;
@@ -116,7 +116,7 @@ uint32_t METIS_partitioner::partition(idx_t nparts) {
   now = std::chrono::duration_cast<std::chrono::milliseconds>(
             (std::chrono::high_resolution_clock::now() - before))
             .count();
-  LOG_INFO("Time to run METIS: %lld", now);
+  LOG_DEBUG("Time to run METIS: %lld", now);
   before = std::chrono::high_resolution_clock::now();
 
   auto old_partitioning = std::move(m_partitioning);
@@ -128,7 +128,7 @@ uint32_t METIS_partitioner::partition(idx_t nparts) {
   now = std::chrono::duration_cast<std::chrono::milliseconds>(
             (std::chrono::high_resolution_clock::now() - before))
             .count();
-  LOG_INFO("Time to assign partitioning: %lld", now);
+  LOG_DEBUG("Time to assign partitioning: %lld", now);
   // std::sort(vwgt, vwgt + nvtxs);
   // for (int i = 0; i < nvtxs; ++i)
   //   std::cout << vwgt[i] << ' ';
@@ -139,7 +139,7 @@ uint32_t METIS_partitioner::partition(idx_t nparts) {
   free(vwgt);
   free(part);
 
-  LOG_INFO("End partitioning");
+  LOG_DEBUG("End partitioning");
   return calculate_movements_repartition(old_partitioning, nparts);
 }
 std::string METIS_partitioner::get_name() {
