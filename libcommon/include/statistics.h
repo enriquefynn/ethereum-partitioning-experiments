@@ -6,8 +6,12 @@
 #include <fstream>
 #include <vector>
 
+#include <log.h>
 class Statistics {
   const Graph &m_graph;
+  uint32_t prev_n_nodes = 0;
+  uint32_t prev_n_edges = 0;
+
   std::ofstream m_output_graph_size_evolution;
   std::ofstream m_output_graph_cc;
   bool m_log_graph_size = true;
@@ -18,13 +22,17 @@ class Statistics {
   uint32_t m_previous_cc_count = 0;
 
   void log_graph_size(uint32_t timestamp, uint32_t n_nodes, uint32_t n_edges) {
-    m_output_graph_size_evolution << timestamp << ' ' << n_nodes << ' '
-                                  << n_edges << '\n';
+    if (n_nodes != prev_n_nodes && n_edges != prev_n_edges) {
+      m_output_graph_size_evolution << timestamp << ' ' << n_nodes << ' '
+                                    << n_edges << std::endl;
+      prev_n_nodes = n_nodes;
+      prev_n_edges = n_edges;
+    }
   }
-  void log_connected_components(uint32_t timestamp){
+  void log_connected_components(uint32_t timestamp) {
     if (m_previous_cc_count != m_number_of_cc) {
       m_output_graph_cc << timestamp << ' ' << m_number_of_cc << std::endl;
-    m_previous_cc_count = m_number_of_cc;
+      m_previous_cc_count = m_number_of_cc;
     }
   };
 

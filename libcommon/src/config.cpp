@@ -32,6 +32,8 @@ Config::Config(const std::string &input_config) {
       TIME_REPARTITION_WINDOW = std::stoul(value);
     } else if (key == "CROSS_PARTITION_THRESHOLD") {
       CROSS_PARTITION_THRESHOLD = std::stof(value);
+    } else if (key == "BALANCE_THRESHOLD") {
+      BALANCE_THRESHOLD = std::stof(value);
     } else if (key == "PARTITIONING_TYPE") {
       if (value == "PERIODIC_PARTITIONING")
         PARTITIONING_TYPE = PERIODIC_PARTITIONING;
@@ -39,6 +41,8 @@ Config::Config(const std::string &input_config) {
         PARTITIONING_TYPE = DYNAMIC_PARTITIONING;
       else
         assert(false);
+    } else if (key == "DELETE_VERTICES") {
+      DELETE_VERTICES = (value == "true") ? true : false;
     } else if (key == "FILEPATH") {
       SAVE_PARTITIONING = true;
       FILE_PATH = value;
@@ -85,8 +89,15 @@ std::ostream &operator<<(std::ostream &os, const Config &c) {
     os << "File ";
   else if (c.PARTITIONING_MODE == Config::FUTURE_PARTITIONER)
     os << "Future ";
-  os << "partitioning\n";
-  os << c.N_PARTITIONS << " partitions\n";
+  os << "partitioning\n" << c.N_PARTITIONS << " partitions\n";
+  if (c.PARTITIONING_TYPE == Config::PERIODIC_PARTITIONING) {
+    os << "Periodic: " << c.TIME_REPARTITION << '\n';
+  } else if (c.PARTITIONING_TYPE == Config::DYNAMIC_PARTITIONING) {
+    os << "Dynamic\n\tWindow: " << c.TIME_REPARTITION_WINDOW
+       << "\n\tThreshold: " << std::fixed << std::setprecision(2)
+       << c.CROSS_PARTITION_THRESHOLD << '\n';
+  }
+
   if (c.SAVE_PARTITIONING)
     os << "Saving/using partitioning file " << c.FILE_PATH << '\n';
   os << "Graph size path: "

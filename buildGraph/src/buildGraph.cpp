@@ -93,7 +93,7 @@ int main(int argc, char **argv) {
       uint32_t edges_cut;
 
       vector<uint32_t> balance;
-      tie(edges_cut, balance) = partitioner->calculate_edge_cut(g);
+      tie(edges_cut, balance) = partitioner->calculate_edge_cut_balances(g);
       Utils::LOG_REPARTITION(stats_file, g, new_timestamp,
                              movements_to_repartition, edges_cut, balance);
     }

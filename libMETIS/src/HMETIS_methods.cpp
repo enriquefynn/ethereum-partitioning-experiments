@@ -127,7 +127,7 @@ std::string HMETIS_partitioner::get_name() {
   std::string threshold = stream.str();
 
   std::string METIS_mode =
-      "HMETIS_" + ((m_config.PARTITIONING_MODE == Config::PERIODIC_PARTITIONING)
+      "HMETIS_" + ((m_config.PARTITIONING_TYPE == Config::PERIODIC_PARTITIONING)
                        ? "PERIODIC_"
                        : "DYNAMIC_" + threshold + "_WINDOW_" +
                              std::to_string(m_config.TIME_REPARTITION_WINDOW) + "_");

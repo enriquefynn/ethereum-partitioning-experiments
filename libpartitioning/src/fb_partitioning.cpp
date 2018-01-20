@@ -168,7 +168,7 @@ uint32_t FB_partitioner::partition(int32_t n_partitions) {
 // Hash partitioning for new vertexes
 void FB_partitioner::assign_partition(const std::set<uint32_t> &vertex_list,
                                       int32_t n_partitions) {
-  Utils::assign_hash_partition(m_partitioning, m_balance, vertex_list,
+  Utils::assign_hash_partition(m_partitioning, m_balances, vertex_list,
                                n_partitions);
 }
 
@@ -177,7 +177,7 @@ std::string FB_partitioner::get_name() {
   stream << std::fixed << std::setprecision(2) << m_config.CROSS_PARTITION_THRESHOLD;
   std::string threshold = stream.str();
   std::string partitioning_mode =
-      (m_config.PARTITIONING_MODE == Config::PERIODIC_PARTITIONING)
+      (m_config.PARTITIONING_TYPE == Config::PERIODIC_PARTITIONING)
           ? "PERIODIC_"
           : "DYNAMIC_" + threshold + "_WINDOW_" +
                 std::to_string(m_config.TIME_REPARTITION_WINDOW) + "_";

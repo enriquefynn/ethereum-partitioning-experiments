@@ -24,7 +24,7 @@ public:
         throw std::logic_error("Last partitioning reached in File partitioner");
       }
       if (!new_vertices.count(vtx)) {
-        ++m_balance[m_partitioning[vtx]];
+        ++m_balances[m_partitioning[vtx]];
         new_vertices.insert(vtx);
       }
     }
@@ -32,7 +32,7 @@ public:
 
   void remove_vertex(uint32_t vtx) {
     assert(m_partitioning[vtx] < m_config.N_PARTITIONS);
-    assert(m_balance[m_partitioning[vtx]] > 0);
+    assert(m_balances[m_partitioning[vtx]] > 0);
 
     auto v_fr = m_id_to_vertex.find(vtx);
     if (v_fr == m_id_to_vertex.end())
@@ -42,7 +42,7 @@ public:
     boost::clear_vertex(delete_vertex, m_graph);
     boost::remove_vertex(delete_vertex, m_graph);
 
-    --m_balance[m_partitioning[vtx]];
+    --m_balances[m_partitioning[vtx]];
     m_id_to_vertex.erase(vtx);
   }
 
@@ -56,5 +56,5 @@ public:
   File_partitioner(const File_partitioner &) = delete;
 
   const std::tuple<uint32_t, std::vector<uint32_t>>
-  calculate_edge_cut(const Graph &g);
+  calculate_edge_cut_balances(const Graph &g);
 };

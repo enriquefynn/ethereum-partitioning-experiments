@@ -16,7 +16,7 @@ void LOG_REPARTITION(std::ofstream &stats_file, const Graph &graph,
              << movements_to_repartition << ' ' << edges_cut << ' ';
   for (int i = 0; i < balance.size(); ++i)
     stats_file << balance[i] << ' ';
-  stats_file << '\n';
+  stats_file << std::endl;
 }
 
 void LOG_POINT(std::ofstream &stats_file, const Graph &graph,
@@ -26,10 +26,10 @@ void LOG_POINT(std::ofstream &stats_file, const Graph &graph,
                const std::unique_ptr<Partitioner> &partitioner) {
   stats_file << "POINT " << cross_partition_tx_access << ' '
              << same_partition_tx_access << ' ' << new_timestamp << ' ';
-  for (int i = 0; i < partitioner->m_balance.size(); ++i)
-    stats_file << partitioner->m_balance[i] << ' ' << txs_per_partition[i]
+  for (int i = 0; i < partitioner->m_balances.size(); ++i)
+    stats_file << partitioner->m_balances[i] << ' ' << txs_per_partition[i]
                << ' ';
-  stats_file << '\n';
+  stats_file << std::endl;
 }
 
 } // namespace Utils

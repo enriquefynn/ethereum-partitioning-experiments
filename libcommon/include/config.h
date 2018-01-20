@@ -71,10 +71,12 @@ public:
   uint8_t PARTITIONING_MODE = HASH_PARTITIONER;
   bool SAVE_PARTITIONING = false;
   bool AVOID_PRECOMPILED = false;
+  bool DELETE_VERTICES = false;
 
   uint32_t TIME_REPARTITION = 60 * 60 * 24 * 15;       // 15 days
   uint32_t TIME_REPARTITION_WINDOW = 60 * 60 * 24 * 2; // 2 days
   float CROSS_PARTITION_THRESHOLD = 0.3; // Threshold for when trigger repartition
+  float BALANCE_THRESHOLD = 1.3;
   uint8_t PARTITIONING_TYPE = PERIODIC_PARTITIONING;
 
   Config(const std::string &config_file);

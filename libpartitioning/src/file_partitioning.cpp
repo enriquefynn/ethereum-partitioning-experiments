@@ -35,11 +35,11 @@ uint32_t File_partitioner::partition(int32_t n_partitions) {
 
   m_config.FILE_INPUT >> n_vertices;
   for (int i = 0; i < m_config.N_PARTITIONS; ++i)
-    m_balance[i] = 0;
+    m_balances[i] = 0;
   for (int i = 0; i < n_vertices; ++i) {
     m_config.FILE_INPUT >> vertex >> part;
     m_partitioning[vertex] = part;
-    ++m_balance[part];
+    ++m_balances[part];
   }
   m_config.FILE_INPUT >> m_partitioning_epoch;
   return 0;
@@ -47,7 +47,7 @@ uint32_t File_partitioner::partition(int32_t n_partitions) {
 }
 
 const std::tuple<uint32_t, std::vector<uint32_t>>
-File_partitioner::calculate_edge_cut(const Graph &g) {
+File_partitioner::calculate_edge_cut_balances(const Graph &g) {
   typename GraphTraits::edge_iterator ei, ei_end;
   uint32_t edges_cut = 0;
 
@@ -57,5 +57,5 @@ File_partitioner::calculate_edge_cut(const Graph &g) {
     if (m_partitioning[source_id] != m_partitioning[target_id])
       ++edges_cut;
   }
-  return {edges_cut, m_balance};
+  return {edges_cut, m_balances};
 }

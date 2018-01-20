@@ -9,7 +9,7 @@
 
 void Future_partitioner::assign_partition(const std::set<uint32_t> &vertex_list,
                                           int32_t nparts) {
-  Utils::assign_hash_partition(m_partitioning, m_balance, vertex_list, nparts);
+  Utils::assign_hash_partition(m_partitioning, m_balances, vertex_list, nparts);
 }
 
 uint32_t Future_partitioner::partition(int32_t nparts) {
