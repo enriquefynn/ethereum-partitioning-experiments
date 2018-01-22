@@ -24,6 +24,8 @@ Config::Config(const std::string &input_config) {
         PARTITIONING_MODE = FILE_PARTITIONER;
       else if (value == "FUTURE")
         PARTITIONING_MODE = FUTURE_PARTITIONER;
+      else if (value == "PART_GRAPH_PARTITIONER")
+        PARTITIONING_MODE = PART_GRAPH_PARTITIONER;
       else
         assert(false);
     } else if (key == "TIME_REPARTITION") {
@@ -89,13 +91,16 @@ std::ostream &operator<<(std::ostream &os, const Config &c) {
     os << "File ";
   else if (c.PARTITIONING_MODE == Config::FUTURE_PARTITIONER)
     os << "Future ";
+  else if (c.PARTITIONING_MODE == Config::FUTURE_PARTITIONER)
+    os << "Partial graph ";
   os << "partitioning\n" << c.N_PARTITIONS << " partitions\n";
   if (c.PARTITIONING_TYPE == Config::PERIODIC_PARTITIONING) {
     os << "Periodic: " << c.TIME_REPARTITION << '\n';
   } else if (c.PARTITIONING_TYPE == Config::DYNAMIC_PARTITIONING) {
     os << "Dynamic\n\tWindow: " << c.TIME_REPARTITION_WINDOW
-       << "\n\tThreshold: " << std::fixed << std::setprecision(2)
-       << c.CROSS_PARTITION_THRESHOLD << '\n';
+       << "\n\t Cross partition threshold: " << std::fixed
+       << std::setprecision(2) << c.CROSS_PARTITION_THRESHOLD
+       << "\n\tBalance threshold:" << c.BALANCE_THRESHOLD << '\n';
   }
 
   if (c.SAVE_PARTITIONING)

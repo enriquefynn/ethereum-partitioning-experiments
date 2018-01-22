@@ -37,6 +37,6 @@ public:
       int32_t nparts) const {
     return 0;
   }
-  // Future_partitioner &operator=(const Future_partitioner &) = delete;
-  // Future_partitioner(const Future_partitioner &) = delete;
+  Future_partitioner &operator=(const Future_partitioner &) = delete;
+  Future_partitioner(const Future_partitioner &) = delete;
 };
