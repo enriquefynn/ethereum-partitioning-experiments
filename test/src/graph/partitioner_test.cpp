@@ -23,7 +23,7 @@ protected:
         std::unique_ptr<Config>(new Config("./test/src/graph/test_config.txt"));
     file_config =
         std::unique_ptr<Config>(new Config("./test/src/graph/test_config.txt"));
-    
+
     stats = std::unique_ptr<Statistics>(new Statistics(*g, *fut_config));
   }
   virtual void TearDown() {
@@ -53,7 +53,7 @@ TEST_F(PartitionerTests, saveFuturePartitioning) {
                                      *stats);
 
   future_partitioner->assign_partition({0, 1, 2, 3, 4, 5}, 2);
-  future_partitioner->trigger_partitioning(10000000, 1, 1);
+  future_partitioner->trigger_partitioning(10000000, 1, 1, {0, 0});
   future_partitioner->partition(2);
   // Speculate on METIS performance
 
@@ -67,7 +67,7 @@ TEST_F(PartitionerTests, saveFuturePartitioning) {
                                      future_partitioner->m_id_to_vertex,
                                      *stats);
   future_partitioner->assign_partition({6, 7, 8, 9, 10, 11}, 2);
-  future_partitioner->trigger_partitioning(100000000, 1, 1);
+  future_partitioner->trigger_partitioning(100000000, 1, 1, {0, 0});
   future_partitioner->partition(2);
 }
 
@@ -75,23 +75,22 @@ TEST_F(PartitionerTests, readFromFuturePartitioning) {
   uint32_t epoch, n_vtx, vtx, part;
   auto part_file = std::fstream("/tmp/part.txt", std::ios::in);
   std::vector<map_type> fut_partitionings;
-  while(part_file >> epoch >> n_vtx) {
+  while (part_file >> epoch >> n_vtx) {
     map_type partitioning;
-    while(n_vtx--) {
+    while (n_vtx--) {
       part_file >> vtx >> part;
       partitioning[vtx] = part;
     }
     fut_partitionings.push_back(partitioning);
   }
 
-
   file_config->SAVE_PARTITIONING = true;
   file_config->FILE_INPUT = std::fstream("/tmp/part.txt", std::ios::in);
-  
+
   auto file_partitioner = new File_partitioner(*g, *file_config);
   ASSERT_EQ(file_partitioner->m_partitioning, fut_partitionings.at(0));
 
-  file_partitioner->trigger_partitioning(10000000, 1, 1);
+  file_partitioner->trigger_partitioning(10000000, 1, 1, {0, 0});
   file_partitioner->partition(2);
   ASSERT_EQ(file_partitioner->m_partitioning, fut_partitionings.at(1));
 }

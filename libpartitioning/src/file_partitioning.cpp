@@ -20,7 +20,8 @@ File_partitioner::File_partitioner(Graph &graph, Config &config)
 
 bool File_partitioner::trigger_partitioning(
     uint32_t new_timestamp, uint32_t cross_edge_access,
-    uint32_t same_partition_edge_access) {
+    uint32_t same_partition_edge_access,
+    const std::vector<uint32_t> &tx_per_partition) {
   if (new_timestamp == m_partitioning_epoch) {
     return true;
   }

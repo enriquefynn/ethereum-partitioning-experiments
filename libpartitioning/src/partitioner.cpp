@@ -76,9 +76,10 @@ Partitioner::calculate_edge_cut_balances(const Graph &g) {
   return make_tuple(edges_cut, m_balances);
 }
 
-bool Partitioner::trigger_partitioning(uint32_t new_timestamp,
-                                       uint32_t cross_edge_access,
-                                       uint32_t same_partition_edge_access) {
+bool Partitioner::trigger_partitioning(
+    uint32_t new_timestamp, uint32_t cross_edge_access,
+    uint32_t same_partition_edge_access,
+    const std::vector<uint32_t> &tx_per_partition) {
   if (m_config.PARTITIONING_TYPE == Config::DYNAMIC_PARTITIONING) {
     m_cross_partition_calls += static_cast<float>(cross_edge_access);
     m_total_calls +=
@@ -89,11 +90,12 @@ bool Partitioner::trigger_partitioning(uint32_t new_timestamp,
           m_config.TIME_REPARTITION) {
         if (!m_cross_partition_calls && !m_total_calls)
           return false;
+        double max_partition_load = calculate_partition_load(tx_per_partition);
         if ((static_cast<float>(m_cross_partition_calls) /
              static_cast<float>(m_total_calls)) >
                 m_config.CROSS_PARTITION_THRESHOLD ||
-            m_balance > m_config.BALANCE_THRESHOLD) {
-          LOG_INFO("m_balance: %f", m_balance);
+            (max_partition_load > m_config.BALANCE_THRESHOLD)) {
+          LOG_INFO("max_partition_load: %f", max_partition_load);
           m_last_partitioning_time = m_timestamp_last_repartition;
           m_timestamp_last_repartition = new_timestamp;
           return true;
@@ -141,4 +143,17 @@ void Partitioner::remove_vertex(uint32_t vtx) {
 
   m_partitioning.erase(vtx);
   m_id_to_vertex.erase(vtx);
+}
+
+double Partitioner::calculate_partition_load(
+    const std::vector<uint32_t> &txs_per_partition) {
+  double avg_tx = 0.;
+  double max_el = 0;
+  for (uint32_t n_tx : txs_per_partition) {
+    avg_tx += n_tx;
+    if (n_tx > max_el)
+      max_el = n_tx;
+  }
+  avg_tx /= txs_per_partition.size();
+  return max_el / avg_tx;
 }

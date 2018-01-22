@@ -19,6 +19,9 @@ protected:
   uint32_t m_timestamp_last_check = 0;
   uint32_t m_cross_partition_calls;
 
+  double
+  calculate_partition_load(const std::vector<uint32_t> &txs_per_partition);
+
 public:
   std::map<uint32_t, Vertex> m_id_to_vertex;
   std::unordered_map<uint32_t, uint32_t> m_partitioning;
@@ -31,9 +34,11 @@ public:
         m_balance(0){};
 
   virtual uint32_t partition(int32_t n_part) = 0;
-  virtual bool trigger_partitioning(uint32_t new_timestamp,
-                                    uint32_t cross_edge_access,
-                                    uint32_t same_partition_edge_access);
+  virtual bool
+  trigger_partitioning(uint32_t new_timestamp, uint32_t cross_edge_access,
+                       uint32_t same_partition_edge_access,
+                       const std::vector<uint32_t> &tx_per_partition);
+
   virtual std::string get_name() = 0;
 
   virtual void assign_partition(const std::set<uint32_t> &vertex_list,

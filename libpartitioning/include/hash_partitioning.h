@@ -9,7 +9,8 @@
 class Hash_partitioner : public Partitioner {
 
 public:
-  Hash_partitioner(Graph &graph, Config &config) : Partitioner(0, graph, config) {}
+  Hash_partitioner(Graph &graph, Config &config)
+      : Partitioner(0, graph, config) {}
 
   void assign_partition(const std::set<uint32_t> &vertex_list, int32_t nparts);
 
@@ -17,7 +18,8 @@ public:
   std::string get_name() { return "HASH"; }
 
   bool trigger_partitioning(uint32_t new_timestamp, uint32_t cross_edge_access,
-                            uint32_t same_partition_edge_access) {
+                            uint32_t same_partition_edge_access,
+                            const std::vector<uint32_t> &tx_per_partition) {
     return false;
   }
 

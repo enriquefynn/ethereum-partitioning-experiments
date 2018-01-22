@@ -50,7 +50,8 @@ public:
   std::string get_name() { return "FILE"; };
 
   bool trigger_partitioning(uint32_t new_timestamp, uint32_t cross_edge_access,
-                            uint32_t same_partition_edge_access);
+                            uint32_t same_partition_edge_access,
+                            const std::vector<uint32_t> &tx_per_partition);
 
   File_partitioner &operator=(const File_partitioner &) = delete;
   File_partitioner(const File_partitioner &) = delete;

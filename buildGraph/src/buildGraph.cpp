@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
   uint32_t lineN, timestamp_log, new_timestamp;
   uint32_t from_vertex, to_vertex, weight;
 
-  uint32_t block_number, has_from = 2;
+  uint32_t block_number, has_from;
   uint32_t tx_type, tx_author, tx_type_n, tx_types_size;
   bool has_value, tx_failed;
   char header;
@@ -77,9 +77,9 @@ int main(int argc, char **argv) {
     if (!timestamp_log)
       timestamp_log = new_timestamp;
 
-    if (partitioner->trigger_partitioning(new_timestamp,
-                                          cross_partition_tx_access,
-                                          same_partition_tx_access)) {
+    if (partitioner->trigger_partitioning(
+            new_timestamp, cross_partition_tx_access, same_partition_tx_access,
+            txs_per_partition)) {
       // Partition the graph
       auto before = std::chrono::high_resolution_clock::now();
       uint32_t movements_to_repartition =
