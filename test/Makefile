@@ -10,18 +10,15 @@ INCLUDES = \
 	-I $(THISDIR)/../libcommon/include \
 	-I $(THISDIR)/../libutils/include \
  	-I $(THISDIR)/../libcommon/include \
-	-I $(THISDIR)/../libMETIS/include \
 	-I $(THISDIR)/../libfuture/include \
  	-I $(THISDIR)/../libpartitioning/include
 
 LDFLAGS = \
 	-L $(THISDIR)/../libpartitioning/bin \
-	-L $(THISDIR)/../libMETIS/bin \
 	-L $(THISDIR)/../libfuture/bin \
 	-L $(THISDIR)/../libutils/bin \
 	-L $(THISDIR)/../libcommon/bin \
 	-lgtest \
-	-lmetismethods \
 	-lfuture \
 	-lpartitioning \
 	-lutils \

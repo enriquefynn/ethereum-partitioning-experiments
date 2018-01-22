@@ -1,8 +1,8 @@
 #pragma once
 #include <partitioner.h>
 
-#include <HMETIS_methods.h>
-#include <METIS_methods.h>
+#include <METIS_partitioning.h>
+#include <HMETIS_partitioning.h>
 #include <config.h>
 #include <fb_partitioning.h>
 #include <file_partitioning.h>

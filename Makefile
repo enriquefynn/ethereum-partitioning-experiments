@@ -4,7 +4,6 @@ all:
 	make -C libutils all
 	make -C libcommon all
 	make -C libpartitioning all
-	make -C libMETIS all
 	make -C libfuture all
 	make -C buildGraph all
 	make -C test all
@@ -13,7 +12,7 @@ clean:
 	make -C libutils clean
 	make -C libcommon clean
 	make -C libpartitioning clean
-	make -C libMETIS clean
+	make -C libfuture clean 
 	make -C buildGraph clean
 	make -C test clean
 

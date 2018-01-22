@@ -2,7 +2,7 @@
 #include <iomanip>
 #include <metis.h>
 
-#include <METIS_methods.h>
+#include <METIS_partitioning.h>
 #include <log.h>
 #include <partitioner.h>
 #include <utils.h>

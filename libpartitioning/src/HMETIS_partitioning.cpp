@@ -6,7 +6,7 @@
 #include <metis.h>
 #include <unordered_map>
 
-#include <HMETIS_methods.h>
+#include <HMETIS_partitioning.h>
 #include <partitioner.h>
 
 #include <utils.h>

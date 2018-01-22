@@ -10,6 +10,7 @@ LDFLAGS = \
 	-L /usr/local/lib \
 	-L $(THISDIR)/../libutils/bin \
 	-L $(THISDIR)/../libMETIS/bin \
-	-lutils
+	-lutils \
+	-lmetis
 
 include ../Makefile.lib

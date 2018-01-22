@@ -14,7 +14,6 @@ LDFLAGS = \
 	-L $(THISDIR)/../libpartitioning/bin \
 	-L $(THISDIR)/../libMETIS/bin \
 	-lpartitioning \
-	-lmetismethods \
 	-lutils
 
 

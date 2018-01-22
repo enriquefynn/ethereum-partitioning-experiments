@@ -1,6 +1,6 @@
 #pragma once
 
-#include <METIS_methods.h>
+#include <METIS_partitioning.h>
 #include <config.h>
 
 #include <cassert>
