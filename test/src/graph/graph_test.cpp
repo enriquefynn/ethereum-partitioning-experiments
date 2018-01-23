@@ -39,13 +39,13 @@ protected:
 };
 
 TEST_F(GraphTest, addEdgesTest) {
-  Utils::add_edge_or_update_weigth(0, 1, 1, *g, partitioner->m_id_to_vertex,
+  Utils::add_edge_or_update_weigth(0, 1, 1, *g, *partitioner,
                                    *stats);
-  Utils::add_edge_or_update_weigth(1, 22, 1, *g, partitioner->m_id_to_vertex,
+  Utils::add_edge_or_update_weigth(1, 22, 1, *g, *partitioner,
                                    *stats);
-  Utils::add_edge_or_update_weigth(3, 4, 1, *g, partitioner->m_id_to_vertex,
+  Utils::add_edge_or_update_weigth(3, 4, 1, *g, *partitioner,
                                    *stats);
-  Utils::add_edge_or_update_weigth(3, 10, 1, *g, partitioner->m_id_to_vertex,
+  Utils::add_edge_or_update_weigth(3, 10, 1, *g, *partitioner,
                                    *stats);
   set<int> vtxs = {0, 1, 22, 3, 4, 10};
 
@@ -60,11 +60,11 @@ TEST_F(GraphTest, addEdgesTest) {
 }
 
 TEST_F(GraphTest, noMultiEdge) {
-  Utils::add_edge_or_update_weigth(1, 2, 1, *g, partitioner->m_id_to_vertex,
+  Utils::add_edge_or_update_weigth(1, 2, 1, *g, *partitioner,
                                    *stats);
-  Utils::add_edge_or_update_weigth(1, 2, 1, *g, partitioner->m_id_to_vertex,
+  Utils::add_edge_or_update_weigth(1, 2, 1, *g, *partitioner,
                                    *stats);
-  Utils::add_edge_or_update_weigth(1, 2, 1, *g, partitioner->m_id_to_vertex,
+  Utils::add_edge_or_update_weigth(1, 2, 1, *g, *partitioner,
                                    *stats);
 
   ASSERT_EQ(2, boost::num_vertices(*g));
@@ -72,11 +72,11 @@ TEST_F(GraphTest, noMultiEdge) {
 }
 
 TEST_F(GraphTest, noLoop) {
-  Utils::add_edge_or_update_weigth(1, 1, 1, *g, partitioner->m_id_to_vertex,
+  Utils::add_edge_or_update_weigth(1, 1, 1, *g, *partitioner,
                                    *stats);
-  Utils::add_edge_or_update_weigth(1, 1, 1, *g, partitioner->m_id_to_vertex,
+  Utils::add_edge_or_update_weigth(1, 1, 1, *g, *partitioner,
                                    *stats);
-  Utils::add_edge_or_update_weigth(1, 1, 1, *g, partitioner->m_id_to_vertex,
+  Utils::add_edge_or_update_weigth(1, 1, 1, *g, *partitioner,
                                    *stats);
 
   ASSERT_EQ(1, boost::num_vertices(*g));
@@ -86,10 +86,10 @@ TEST_F(GraphTest, noLoop) {
 TEST_F(GraphTest, haveEdgeWeight) {
   Edge edge;
   tie(edge, std::ignore) = Utils::add_edge_or_update_weigth(
-      1, 10, 10, *g, partitioner->m_id_to_vertex, *stats);
-  Utils::add_edge_or_update_weigth(1, 10, 1, *g, partitioner->m_id_to_vertex,
+      1, 10, 10, *g, *partitioner, *stats);
+  Utils::add_edge_or_update_weigth(1, 10, 1, *g, *partitioner,
                                    *stats);
-  Utils::add_edge_or_update_weigth(1, 10, 1, *g, partitioner->m_id_to_vertex,
+  Utils::add_edge_or_update_weigth(1, 10, 1, *g, *partitioner,
                                    *stats);
 
   auto weights_map = get(boost::edge_weight, *g);
@@ -101,10 +101,10 @@ TEST_F(GraphTest, haveEdgeWeight) {
 TEST_F(GraphTest, haveVertexWeight) {
   Edge edge;
   tie(edge, std::ignore) = Utils::add_edge_or_update_weigth(
-      1, 10, 10, *g, partitioner->m_id_to_vertex, *stats);
-  Utils::add_edge_or_update_weigth(1, 10, 1, *g, partitioner->m_id_to_vertex,
+      1, 10, 10, *g, *partitioner, *stats);
+  Utils::add_edge_or_update_weigth(1, 10, 1, *g, *partitioner,
                                    *stats);
-  Utils::add_edge_or_update_weigth(1, 10, 1, *g, partitioner->m_id_to_vertex,
+  Utils::add_edge_or_update_weigth(1, 10, 1, *g, *partitioner,
                                    *stats);
 
   ASSERT_EQ((*g)[boost::target(edge, *g)].m_vertex_weight, 3);
@@ -116,18 +116,18 @@ TEST_F(GraphTest, ComputesCorrectCC) {
   stats = std::unique_ptr<Statistics>(new Statistics(*g, *config));
 
   Edge edge;
-  Utils::add_edge_or_update_weigth(0, 1, 1, *g, partitioner->m_id_to_vertex,
+  Utils::add_edge_or_update_weigth(0, 1, 1, *g, *partitioner,
                                    *stats);
   ASSERT_EQ(stats->m_number_of_cc, 1);
-  Utils::add_edge_or_update_weigth(1, 2, 1, *g, partitioner->m_id_to_vertex,
+  Utils::add_edge_or_update_weigth(1, 2, 1, *g, *partitioner,
                                    *stats);
-  Utils::add_edge_or_update_weigth(3, 4, 1, *g, partitioner->m_id_to_vertex,
+  Utils::add_edge_or_update_weigth(3, 4, 1, *g, *partitioner,
                                    *stats);
   ASSERT_EQ(stats->m_number_of_cc, 2);
-  Utils::add_edge_or_update_weigth(5, 6, 1, *g, partitioner->m_id_to_vertex,
+  Utils::add_edge_or_update_weigth(5, 6, 1, *g, *partitioner,
                                    *stats);
   ASSERT_EQ(stats->m_number_of_cc, 3);
-  Utils::add_edge_or_update_weigth(0, 5, 1, *g, partitioner->m_id_to_vertex,
+  Utils::add_edge_or_update_weigth(0, 5, 1, *g, *partitioner,
                                    *stats);
   ASSERT_EQ(stats->m_number_of_cc, 2);
 }

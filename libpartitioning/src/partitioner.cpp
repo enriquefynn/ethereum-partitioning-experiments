@@ -46,6 +46,21 @@ void Partitioner::assign_partition(const std::set<uint32_t> &vertex_list,
   }
 }
 
+const uint32_t Partitioner::calculate_movements_repartition(
+    const std::unordered_map<uint32_t, uint32_t> &old_partitioning,
+    const std::unordered_map<uint32_t, uint32_t> &new_partitioning,
+    int32_t nparts) const {
+  uint32_t moves = 0;
+  LOG_INFO("CUR: %d, OLD: %d", new_partitioning.size(), old_partitioning.size());
+  assert(new_partitioning.size() == old_partitioning.size());
+
+  for (const auto &kv : old_partitioning) {
+    if (kv.second != new_partitioning.at(kv.first))
+      ++moves;
+  }
+  return moves;
+}
+
 const std::tuple<uint32_t, std::vector<uint32_t>>
 Partitioner::calculate_edge_cut_balances(const Graph &g) {
   typename GraphTraits::edge_iterator ei, ei_end;
@@ -74,6 +89,15 @@ Partitioner::calculate_edge_cut_balances(const Graph &g) {
   m_balance /= (boost::num_vertices(g) / m_config.N_PARTITIONS);
 
   return make_tuple(edges_cut, m_balances);
+}
+
+bool Partitioner::same_partition(uint32_t v1, uint32_t v2) const {
+  try {
+    return m_partitioning.at(v1) == m_partitioning.at(v2);
+  } catch (const std::out_of_range &oor) {
+    return true;
+    assert(false);
+  }
 }
 
 bool Partitioner::trigger_partitioning(

@@ -27,7 +27,6 @@ ifeq ($(UNAME), Linux)
     LDFLAGS += \
     -lmetis \
 		-Wl,-rpath,/home/fynn/.local/lib \
-		-Wl,-rpath,$(THISDIR)/../libMETIS/bin \
 		-Wl,-rpath,$(THISDIR)/../libcommon/bin \
 		-Wl,-rpath,$(THISDIR)/../libutils/bin \
 		-Wl,-rpath,$(THISDIR)/../libfuture/bin \

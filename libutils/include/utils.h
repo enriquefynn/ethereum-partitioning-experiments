@@ -53,23 +53,23 @@ const uint32_t get_id(const vertex_ds &vd, const Graph &g) {
   // return get(vertex_index_map, vd);
 }
 
-template <typename vertex_id, typename weight_type, typename map_type>
+template <typename vertex_id, typename weight_type>
 std::pair<Edge, bool>
 add_edge_or_update_weigth(const vertex_id from, const vertex_id to,
                           const weight_type weight, Graph &g,
-                          map_type &id_vertex_map, Statistics &statistics) {
+                          Partitioner &partitioner,
+                          Statistics &statistics) {
 
   // auto vertex_index_map = get(boost::vertex_index, g);
   auto weights_map = get(boost::edge_weight, g);
 
-  auto v_fr = id_vertex_map.find(from);
-
+  auto v_fr = partitioner.m_id_to_vertex.find(from);
   Vertex fr_desc, to_desc;
-  if (v_fr == id_vertex_map.end()) {
+  if (v_fr == std::end(partitioner.m_id_to_vertex)) {
     fr_desc = boost::add_vertex(g);
     g[fr_desc] = VertexProperty(from);
     // put(vertex_index_map, fr_desc, from);
-    id_vertex_map.insert(v_fr, typename map_type::value_type(from, fr_desc));
+    partitioner.m_id_to_vertex.insert(v_fr, {from, fr_desc});
   } else
     fr_desc = (*v_fr).second;
 
@@ -78,12 +78,12 @@ add_edge_or_update_weigth(const vertex_id from, const vertex_id to,
     Edge ed;
     return {ed, false};
   }
-  auto v_to = id_vertex_map.find(to);
-  if (v_to == id_vertex_map.end()) {
+  auto v_to = partitioner.m_id_to_vertex.find(to);
+  if (v_to == std::end(partitioner.m_id_to_vertex)) {
     to_desc = boost::add_vertex(g);
     g[to_desc] = VertexProperty(to);
     // put(vertex_index_map, to_desc, to);
-    id_vertex_map.insert(v_to, typename map_type::value_type(to, to_desc));
+    partitioner.m_id_to_vertex.insert(v_to, {to, to_desc});
   } else
     to_desc = (*v_to).second;
 
@@ -95,7 +95,7 @@ add_edge_or_update_weigth(const vertex_id from, const vertex_id to,
     auto current_weight = get(weights_map, edge);
     put(weights_map, edge, current_weight + weight);
   } else {
-    tie(edge, edge_found) = std::move(add_edge(fr_desc, to_desc, g));
+    tie(edge, edge_found) = std::move(boost::add_edge(fr_desc, to_desc, g));
     put(weights_map, edge, weight);
   }
   // Update vertex weight
@@ -105,6 +105,7 @@ add_edge_or_update_weigth(const vertex_id from, const vertex_id to,
   // Statistics
   statistics.add_edge(fr_desc, to_desc);
 
+  partitioner.added_edge(from, to);
   return {edge, edge_found};
 }
 

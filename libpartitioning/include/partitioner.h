@@ -54,29 +54,15 @@ public:
 
   virtual const uint32_t calculate_movements_repartition(
       const std::unordered_map<uint32_t, uint32_t> &old_partitioning,
-      int32_t nparts) const {
-    uint32_t moves = 0;
-    assert(m_partitioning.size() == old_partitioning.size());
-
-    for (const auto &kv : old_partitioning) {
-      if (kv.second != m_partitioning.at(kv.first))
-        ++moves;
-    }
-    return moves;
-  }
+      const std::unordered_map<uint32_t, uint32_t> &new_partitioning,
+      int32_t nparts) const;
 
   // Edges cut, vertices in each partitioning partitioning.size()
   virtual const std::tuple<uint32_t, std::vector<uint32_t>>
   calculate_edge_cut_balances(const Graph &g);
 
-  inline bool same_partition(uint32_t v1, uint32_t v2) const {
-    try {
-      return m_partitioning.at(v1) == m_partitioning.at(v2);
-    } catch (const std::out_of_range &oor) {
-      return true;
-      assert(false);
-    }
-  }
+  bool same_partition(uint32_t v1, uint32_t v2) const;
 
+  virtual void added_edge(uint32_t from, uint32_t to) {}
   virtual void terminate() {}
 };

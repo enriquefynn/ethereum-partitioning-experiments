@@ -100,7 +100,7 @@ uint32_t HMETIS_partitioner::partition(int nparts) {
   }
 
   // assert(vtx_id == nvtxs);
-  return calculate_movements_repartition(old_partitioning, nparts);
+  return calculate_movements_repartition(old_partitioning, m_partitioning, nparts);
 }
 
 void HMETIS_partitioner::assign_partition(const std::set<uint32_t> &vertex_list,

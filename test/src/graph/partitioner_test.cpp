@@ -49,7 +49,7 @@ TEST_F(PartitionerTests, saveFuturePartitioning) {
 
   for (auto const vertex : vertices)
     Utils::add_edge_or_update_weigth(vertex.first, vertex.second, 1, *g,
-                                     future_partitioner->m_id_to_vertex,
+                                     *future_partitioner,
                                      *stats);
 
   future_partitioner->assign_partition({0, 1, 2, 3, 4, 5}, 2);
@@ -64,7 +64,7 @@ TEST_F(PartitionerTests, saveFuturePartitioning) {
                 });
   for (auto const vertex : vertices)
     Utils::add_edge_or_update_weigth(vertex.first, vertex.second, 1, *g,
-                                     future_partitioner->m_id_to_vertex,
+                                     *future_partitioner,
                                      *stats);
   future_partitioner->assign_partition({6, 7, 8, 9, 10, 11}, 2);
   future_partitioner->trigger_partitioning(100000000, 1, 1, {0, 0});

@@ -60,8 +60,8 @@ int main(int argc, char **argv) {
   for (int tx = 0; tx < n_transactions; ++tx) {
     calls_file >> to_vertex >> tx_value;
     involved_vertices.insert(to_vertex);
-    Utils::add_edge_or_update_weigth(0u, to_vertex, 1, g,
-                                     partitioner->m_id_to_vertex, statistics);
+    Utils::add_edge_or_update_weigth(0u, to_vertex, 1, g, *partitioner,
+                                     statistics);
   }
   partitioner->assign_partition(involved_vertices, config.N_PARTITIONS);
   // End Genesis processing
@@ -142,8 +142,7 @@ int main(int argc, char **argv) {
             delete_vertices.push_back(from_vertex);
           }
           Utils::add_edge_or_update_weigth(from_vertex, to_vertex, weight, g,
-                                           partitioner->m_id_to_vertex,
-                                           statistics);
+                                           *partitioner, statistics);
           involved_edges.push_back({from_vertex, to_vertex});
         }
       }

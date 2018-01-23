@@ -34,6 +34,7 @@ public:
 
   const uint32_t calculate_movements_repartition(
       const std::unordered_map<uint32_t, uint32_t> &old_partitioning,
+      const std::unordered_map<uint32_t, uint32_t> &new_partitioning,
       int32_t nparts) const {
     return 0;
   }

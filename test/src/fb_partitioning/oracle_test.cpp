@@ -31,7 +31,7 @@ protected:
     test_graph >> n_edges;
     for (int i = 0; i < n_edges; ++i) {
       test_graph >> fr >> to;
-      Utils::add_edge_or_update_weigth(fr, to, 1, *g, partitioner->m_id_to_vertex, *stats);
+      Utils::add_edge_or_update_weigth(fr, to, 1, *g, *partitioner, *stats);
     }
     test_graph >> n_vtx;
     for (int i = 0; i < n_vtx; ++i) {

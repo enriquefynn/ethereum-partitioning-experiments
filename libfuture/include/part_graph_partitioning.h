@@ -11,32 +11,24 @@
 
 class Part_graph_partitioner : public METIS_partitioner {
 private:
-  std::ifstream m_partitioning_file;
-  std::unordered_set<uint32_t> new_vertices;
+  Graph m_cur_graph;
+  std::unordered_map<uint32_t, uint32_t> m_cur_partitioning;
+  std::map<uint32_t, Vertex> m_cur_id_to_vertex;
 
 public:
   Part_graph_partitioner(Graph &graph, Config &config)
-      : METIS_partitioner(graph, config) {
-    assert(m_config.SAVE_PARTITIONING);
-  }
-
-  void assign_partition(const std::set<uint32_t> &vertex_list, int32_t nparts);
+      : METIS_partitioner(graph, config) {}
 
   uint32_t partition(int32_t nparts);
   std::string get_name() { return "Partial_graph"; };
 
   void terminate() {
-    partition(m_config.N_PARTITIONS);
+    // partition(m_config.N_PARTITIONS);
     m_config.FILE_INPUT.close();
   }
+  
+  void added_edge(uint32_t from, uint32_t to);
 
-  void remove_vertex(uint32_t vtx) {}
-
-  const uint32_t calculate_movements_repartition(
-      const std::unordered_map<uint32_t, uint32_t> &old_partitioning,
-      int32_t nparts) const {
-    return 0;
-  }
   Part_graph_partitioner &operator=(const Part_graph_partitioner &) = delete;
   Part_graph_partitioner(const Part_graph_partitioner &) = delete;
 };

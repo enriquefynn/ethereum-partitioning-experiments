@@ -24,7 +24,7 @@ Config::Config(const std::string &input_config) {
         PARTITIONING_MODE = FILE_PARTITIONER;
       else if (value == "FUTURE")
         PARTITIONING_MODE = FUTURE_PARTITIONER;
-      else if (value == "PART_GRAPH_PARTITIONER")
+      else if (value == "PART_GRAPH")
         PARTITIONING_MODE = PART_GRAPH_PARTITIONER;
       else
         assert(false);
@@ -91,8 +91,9 @@ std::ostream &operator<<(std::ostream &os, const Config &c) {
     os << "File ";
   else if (c.PARTITIONING_MODE == Config::FUTURE_PARTITIONER)
     os << "Future ";
-  else if (c.PARTITIONING_MODE == Config::FUTURE_PARTITIONER)
+  else if (c.PARTITIONING_MODE == Config::PART_GRAPH_PARTITIONER)
     os << "Partial graph ";
+  
   os << "partitioning\n" << c.N_PARTITIONS << " partitions\n";
   if (c.PARTITIONING_TYPE == Config::PERIODIC_PARTITIONING) {
     os << "Periodic: " << c.TIME_REPARTITION << '\n';
