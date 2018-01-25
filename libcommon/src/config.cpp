@@ -99,7 +99,7 @@ std::ostream &operator<<(std::ostream &os, const Config &c) {
     os << "Periodic: " << c.TIME_REPARTITION << '\n';
   } else if (c.PARTITIONING_TYPE == Config::DYNAMIC_PARTITIONING) {
     os << "Dynamic\n\tWindow: " << c.TIME_REPARTITION_WINDOW
-       << "\n\t Cross partition threshold: " << std::fixed
+       << "\n\tCross partition threshold: " << std::fixed
        << std::setprecision(2) << c.CROSS_PARTITION_THRESHOLD
        << "\n\tBalance threshold:" << c.BALANCE_THRESHOLD << '\n';
   }

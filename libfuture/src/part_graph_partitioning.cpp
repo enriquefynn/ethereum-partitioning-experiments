@@ -26,6 +26,33 @@ uint32_t Part_graph_partitioner::partition(int32_t nparts) {
   return moves;
 }
 
+std::string Part_graph_partitioner::get_name() {
+  std::string threshold_cross_call, threshold_tx_load;
+  {
+    std::stringstream stream;
+    stream << std::fixed << std::setprecision(2)
+           << m_config.CROSS_PARTITION_THRESHOLD;
+    threshold_cross_call = stream.str();
+  }
+  {
+    std::stringstream stream;
+    stream << std::fixed << std::setprecision(2) << m_config.BALANCE_THRESHOLD;
+    threshold_tx_load = stream.str();
+  }
+
+  std::string partition_mode =
+      "Partial_graph_" +
+      ((m_config.PARTITIONING_TYPE == Config::PERIODIC_PARTITIONING)
+           ? "PERIODIC_"
+           : "DYNAMIC_CROSS_CALL_" + threshold_cross_call + "_TX_LOAD_" +
+                 threshold_tx_load + "_WINDOW_" +
+                 std::to_string(m_config.TIME_REPARTITION_WINDOW) + "_");
+
+  return partition_mode + "repart_" +
+         std::to_string(m_config.TIME_REPARTITION) + "_seed_" +
+         std::to_string(METIS_SEED);
+}
+
 void Part_graph_partitioner::added_edge(uint32_t from, uint32_t to) {
   auto v_fr = m_cur_id_to_vertex.find(from);
   Vertex fr_desc, to_desc;

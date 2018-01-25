@@ -122,7 +122,6 @@ METIS_partitioner::partition(const Graph &graph,
   
   auto old_partitioning = std::move(partitioning);
   assert(partitioning.size() == 0);
-  LOG_INFO("%d %d", old_partitioning.size(), nvtxs);
   assert(old_partitioning.size() == nvtxs);
   for (int i = 0; i < nvtxs; ++i) {
     partitioning[from_metis_vtx[i]] = part[i];

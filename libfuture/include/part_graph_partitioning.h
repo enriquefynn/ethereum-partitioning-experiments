@@ -20,7 +20,7 @@ public:
       : METIS_partitioner(graph, config) {}
 
   uint32_t partition(int32_t nparts);
-  std::string get_name() { return "Partial_graph"; };
+  std::string get_name();
 
   void terminate() {
     // partition(m_config.N_PARTITIONS);

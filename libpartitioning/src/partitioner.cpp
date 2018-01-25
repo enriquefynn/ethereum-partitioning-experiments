@@ -51,7 +51,6 @@ const uint32_t Partitioner::calculate_movements_repartition(
     const std::unordered_map<uint32_t, uint32_t> &new_partitioning,
     int32_t nparts) const {
   uint32_t moves = 0;
-  LOG_INFO("CUR: %d, OLD: %d", new_partitioning.size(), old_partitioning.size());
   assert(new_partitioning.size() == old_partitioning.size());
 
   for (const auto &kv : old_partitioning) {
@@ -119,7 +118,6 @@ bool Partitioner::trigger_partitioning(
              static_cast<float>(m_total_calls)) >
                 m_config.CROSS_PARTITION_THRESHOLD ||
             (max_partition_load > m_config.BALANCE_THRESHOLD)) {
-          LOG_INFO("max_partition_load: %f", max_partition_load);
           m_last_partitioning_time = m_timestamp_last_repartition;
           m_timestamp_last_repartition = new_timestamp;
           return true;
