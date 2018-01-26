@@ -7,7 +7,6 @@
 
 #include <config.h>
 #include <partitioner.h>
-#include <statistics.h>
 
 namespace Utils {
 template <typename map_type>
@@ -57,8 +56,7 @@ template <typename vertex_id, typename weight_type>
 std::pair<Edge, bool>
 add_edge_or_update_weigth(const vertex_id from, const vertex_id to,
                           const weight_type weight, Graph &g,
-                          Partitioner &partitioner,
-                          Statistics &statistics) {
+                          Partitioner &partitioner) {
 
   // auto vertex_index_map = get(boost::vertex_index, g);
   auto weights_map = get(boost::edge_weight, g);
@@ -101,9 +99,6 @@ add_edge_or_update_weigth(const vertex_id from, const vertex_id to,
   // Update vertex weight
   ++g[boost::source(edge, g)].m_vertex_weight;
   ++g[boost::target(edge, g)].m_vertex_weight;
-
-  // Statistics
-  statistics.add_edge(fr_desc, to_desc);
 
   partitioner.added_edge(from, to);
   return {edge, edge_found};

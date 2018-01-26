@@ -7,8 +7,13 @@
 #include <vector>
 
 #include <log.h>
+#include <partitioner.h>
+
 class Statistics {
   const Graph &m_graph;
+  const Partitioner &m_partitioner;
+  uint32_t m_edges_cut = 0;
+
   uint32_t prev_n_nodes = 0;
   uint32_t prev_n_edges = 0;
 
@@ -41,8 +46,9 @@ class Statistics {
 
 public:
   uint32_t m_number_of_cc;
-  Statistics(const Graph &graph, const Config &config)
-      : m_graph(graph),
+  Statistics(const Graph &graph, const Partitioner &partitioner,
+             const Config &config)
+      : m_graph(graph), m_partitioner(partitioner),
         m_output_graph_size_evolution(config.GRAPH_SIZE_EVOLUTION_PATH),
         m_output_graph_cc(config.GRAPH_CC_PATH), m_number_of_cc(0) {
 
@@ -53,5 +59,6 @@ public:
   }
   void log(uint32_t timestamp);
 
-  void add_edge(const Vertex &from, const Vertex &to);
+  void add_edges(const std::vector<std::pair<uint32_t, uint32_t>> &edges);
+  void define_edges_cut(uint32_t edges_cut) { m_edges_cut = edges_cut; }
 };

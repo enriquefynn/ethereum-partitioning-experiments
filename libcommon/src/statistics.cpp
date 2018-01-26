@@ -37,17 +37,19 @@ void Statistics::p_union(uint32_t from, uint32_t to) {
   }
   --m_number_of_cc;
 }
-#include <iostream>
-void Statistics::add_edge(const Vertex &from, const Vertex &to) {
-  if (!m_log_graph_cc)
-    return;
-  auto idx_from = m_graph[from].m_vertex_id;
-  auto idx_to = m_graph[to].m_vertex_id;
-  auto max_idx = std::max(idx_from, idx_to);
-  for (int i = m_rank.size(); i < max_idx + 1; ++i) {
-    ++m_number_of_cc;
-    m_rank.push_back(0);
-    m_parent.push_back(i);
-  }
-  p_union(idx_from, idx_to);
+
+void Statistics::add_edges(
+    const std::vector<std::pair<uint32_t, uint32_t>> &edges) {
+
+  // if (!m_log_graph_cc)
+  //   return;
+  // auto idx_from = m_graph[from].m_vertex_id;
+  // auto idx_to = m_graph[to].m_vertex_id;
+  // auto max_idx = std::max(idx_from, idx_to);
+  // for (int i = m_rank.size(); i < max_idx + 1; ++i) {
+  //   ++m_number_of_cc;
+  //   m_rank.push_back(0);
+  //   m_parent.push_back(i);
+  // }
+  // p_union(idx_from, idx_to);
 }

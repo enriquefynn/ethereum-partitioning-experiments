@@ -1,6 +1,7 @@
 #include <iostream>
 #include <partitioner.h>
 #include <utils.h>
+
 void Partitioner::assign_partition(const std::set<uint32_t> &vertex_list,
                                    int32_t nparts) {
   // std::cout << "Involved vertices: ";

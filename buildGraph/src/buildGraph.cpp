@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
   Config config = Config(argv[2]);
   cout << config;
   auto partitioner = GraphHelpers::get_partitioner(g, config);
-  Statistics statistics(g, config);
+  Statistics statistics(g, *partitioner, config);
 
   std::ifstream calls_file(argv[1]);
   std::ofstream stats_file("/tmp/edge_cut_evolution_partitions_" +
@@ -60,8 +60,7 @@ int main(int argc, char **argv) {
   for (int tx = 0; tx < n_transactions; ++tx) {
     calls_file >> to_vertex >> tx_value;
     involved_vertices.insert(to_vertex);
-    Utils::add_edge_or_update_weigth(0u, to_vertex, 1, g, *partitioner,
-                                     statistics);
+    Utils::add_edge_or_update_weigth(0u, to_vertex, 1, g, *partitioner);
   }
   partitioner->assign_partition(involved_vertices, config.N_PARTITIONS);
   // End Genesis processing
@@ -94,6 +93,7 @@ int main(int argc, char **argv) {
 
       vector<uint32_t> balance;
       tie(edges_cut, balance) = partitioner->calculate_edge_cut_balances(g);
+      statistics.define_edges_cut(edges_cut);
       Utils::LOG_REPARTITION(stats_file, g, new_timestamp,
                              movements_to_repartition, edges_cut, balance);
     }
@@ -142,12 +142,13 @@ int main(int argc, char **argv) {
             delete_vertices.push_back(from_vertex);
           }
           Utils::add_edge_or_update_weigth(from_vertex, to_vertex, weight, g,
-                                           *partitioner, statistics);
+                                           *partitioner);
           involved_edges.push_back({from_vertex, to_vertex});
         }
       }
       try {
         partitioner->assign_partition(involved_vertices, config.N_PARTITIONS);
+        statistics.add_edges(involved_edges);
       } catch (const std::logic_error &e) {
         cout << e.what() << endl;
         return 0;
