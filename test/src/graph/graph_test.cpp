@@ -5,9 +5,9 @@
 #include <config.h>
 #include <fstream>
 #include <hash_partitioning.h>
+#include <statistics.h>
 #include <unordered_map>
 #include <utils.h>
-#include <statistics.h>
 
 typedef std::unordered_map<uint32_t, uint32_t> map_type;
 
@@ -74,29 +74,31 @@ TEST_F(GraphTest, noLoop) {
 
 TEST_F(GraphTest, haveEdgeWeight) {
   Edge edge;
-  tie(edge, std::ignore) =
+  auto added_edge =
       Utils::add_edge_or_update_weigth(1, 10, 10, *g, *partitioner);
   Utils::add_edge_or_update_weigth(1, 10, 1, *g, *partitioner);
   Utils::add_edge_or_update_weigth(1, 10, 1, *g, *partitioner);
 
   auto weights_map = get(boost::edge_weight, *g);
-  auto weight = get(weights_map, edge);
+  auto weight = get(weights_map, std::get<0>(added_edge));
 
   ASSERT_EQ(12, weight);
 }
 
 TEST_F(GraphTest, haveVertexWeight) {
   Edge edge;
-  tie(edge, std::ignore) =
+  auto added_edge =
       Utils::add_edge_or_update_weigth(1, 10, 10, *g, *partitioner);
   Utils::add_edge_or_update_weigth(1, 10, 1, *g, *partitioner);
   Utils::add_edge_or_update_weigth(1, 10, 1, *g, *partitioner);
 
-  ASSERT_EQ((*g)[boost::target(edge, *g)].m_vertex_weight, 3);
-  ASSERT_EQ((*g)[boost::source(edge, *g)].m_vertex_weight, 3);
+  ASSERT_EQ((*g)[boost::target(std::get<0>(added_edge), *g)].m_vertex_weight,
+            3);
+  ASSERT_EQ((*g)[boost::source(std::get<0>(added_edge), *g)].m_vertex_weight,
+            3);
 }
 
-TEST_F(GraphTest, ComputesCorrectCC) {
+TEST_F(GraphTest, computesCorrectCC) {
   config->GRAPH_CC_PATH = "/tmp/cc.txt";
   auto stats = Statistics(*g, *partitioner, *config);
 
@@ -110,4 +112,25 @@ TEST_F(GraphTest, ComputesCorrectCC) {
   ASSERT_EQ(stats.m_number_of_cc, 3);
   Utils::add_edge_or_update_weigth(0, 5, 1, *g, *partitioner);
   ASSERT_EQ(stats.m_number_of_cc, 2);
+}
+
+TEST_F(GraphTest, comutesCorrectEdgeCut) {
+  Edge edge;
+  vector<pair<uint32_t, uint32_t>> part = {
+      {0, 0}, {1, 0}, {2, 0}, {3, 1}, {4, 1}};
+  for (const auto &p : part)
+    (*partitioning)[p.first] = p.second;
+
+  std::vector<std::tuple<Edge, Utils::EDGE_PROP>> involved_edges;
+
+  vector<pair<uint32_t, uint32_t>> edges = {
+      {0, 1}, {0, 2}, {0, 3}, {0, 4}, {3, 4}};
+  for (const auto &edge : edges)
+    involved_edges.push_back(Utils::add_edge_or_update_weigth(
+        edge.first, edge.second, 1, *g, *partitioner));
+        
+  partitioner->define_partitioning(*partitioning);
+  auto stats = Statistics(*g, *partitioner, *config);
+  stats.add_edges(involved_edges);
+  ASSERT_EQ(stats.m_edges_cut, 2);
 }

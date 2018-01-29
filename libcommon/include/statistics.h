@@ -2,17 +2,17 @@
 
 #include <boost/graph/incremental_components.hpp>
 #include <boost/pending/disjoint_sets.hpp>
-#include <config.h>
 #include <fstream>
 #include <vector>
 
+#include <config.h>
 #include <log.h>
 #include <partitioner.h>
+#include <utils.h>
 
 class Statistics {
   const Graph &m_graph;
   const Partitioner &m_partitioner;
-  uint32_t m_edges_cut = 0;
 
   uint32_t prev_n_nodes = 0;
   uint32_t prev_n_edges = 0;
@@ -46,12 +46,13 @@ class Statistics {
 
 public:
   uint32_t m_number_of_cc;
+  uint32_t m_edges_cut;
   Statistics(const Graph &graph, const Partitioner &partitioner,
              const Config &config)
       : m_graph(graph), m_partitioner(partitioner),
         m_output_graph_size_evolution(config.GRAPH_SIZE_EVOLUTION_PATH),
-        m_output_graph_cc(config.GRAPH_CC_PATH), m_number_of_cc(0) {
-
+        m_output_graph_cc(config.GRAPH_CC_PATH), m_number_of_cc(0),
+        m_edges_cut(0) {
     if (!config.GRAPH_SIZE_EVOLUTION_PATH.size())
       m_log_graph_size = false;
     if (!config.GRAPH_CC_PATH.size())
@@ -59,6 +60,6 @@ public:
   }
   void log(uint32_t timestamp);
 
-  void add_edges(const std::vector<std::pair<uint32_t, uint32_t>> &edges);
+  void add_edges(const std::vector<std::tuple<Edge, Utils::EDGE_PROP>> &edges);
   void define_edges_cut(uint32_t edges_cut) { m_edges_cut = edges_cut; }
 };

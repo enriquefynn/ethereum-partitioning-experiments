@@ -23,9 +23,11 @@ void LOG_POINT(std::ofstream &stats_file, const Graph &graph,
                uint32_t cross_partition_tx_access,
                uint32_t same_partition_tx_access, uint32_t new_timestamp,
                const std::vector<uint32_t> &txs_per_partition,
-               const std::unique_ptr<Partitioner> &partitioner) {
+               const std::unique_ptr<Partitioner> &partitioner,
+               uint32_t edges_cut) {
   stats_file << "POINT " << cross_partition_tx_access << ' '
-             << same_partition_tx_access << ' ' << new_timestamp << ' ';
+             << same_partition_tx_access << ' ' << new_timestamp << ' '
+             << boost::num_edges(graph) << ' ' << edges_cut << ' ';
   for (int i = 0; i < partitioner->m_balances.size(); ++i)
     stats_file << partitioner->m_balances[i] << ' ' << txs_per_partition[i]
                << ' ';

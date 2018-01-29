@@ -39,17 +39,30 @@ void Statistics::p_union(uint32_t from, uint32_t to) {
 }
 
 void Statistics::add_edges(
-    const std::vector<std::pair<uint32_t, uint32_t>> &edges) {
-
-  // if (!m_log_graph_cc)
-  //   return;
-  // auto idx_from = m_graph[from].m_vertex_id;
-  // auto idx_to = m_graph[to].m_vertex_id;
-  // auto max_idx = std::max(idx_from, idx_to);
-  // for (int i = m_rank.size(); i < max_idx + 1; ++i) {
-  //   ++m_number_of_cc;
-  //   m_rank.push_back(0);
-  //   m_parent.push_back(i);
-  // }
-  // p_union(idx_from, idx_to);
+    const std::vector<std::tuple<Edge, Utils::EDGE_PROP>> &edges) {
+  for (const auto &edge : edges) {
+    if (std::get<1>(edge) == Utils::INVALID)
+      continue;
+    uint32_t from =
+        Utils::get_id(boost::source(std::get<0>(edge), m_graph), m_graph);
+    uint32_t to =
+        Utils::get_id(boost::target(std::get<0>(edge), m_graph), m_graph);
+    // Calculate edge-cuts
+    if (std::get<1>(edge) == Utils::NOT_FOUND) {
+      if (m_partitioner.m_partitioning.at(from) !=
+          m_partitioner.m_partitioning.at(to))
+        ++m_edges_cut;
+    }
+    // Calculate Connected components
+    if (m_log_graph_cc) {
+      auto max_idx = std::max(from, to);
+      std::cout << "MAX: " << max_idx << std::endl;
+      for (int i = m_rank.size(); i < max_idx + 1; ++i) {
+        ++m_number_of_cc;
+        m_rank.push_back(0);
+        m_parent.push_back(i);
+      }
+      p_union(from, to);
+    }
+  }
 }

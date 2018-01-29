@@ -9,6 +9,8 @@
 #include <partitioner.h>
 
 namespace Utils {
+enum EDGE_PROP { FOUND, NOT_FOUND, INVALID };
+
 template <typename map_type>
 void assign_hash_partition(map_type &partitioning,
                            std::vector<uint32_t> &balance,
@@ -53,11 +55,10 @@ const uint32_t get_id(const vertex_ds &vd, const Graph &g) {
 }
 
 template <typename vertex_id, typename weight_type>
-std::pair<Edge, bool>
+std::tuple<Edge, Utils::EDGE_PROP>
 add_edge_or_update_weigth(const vertex_id from, const vertex_id to,
                           const weight_type weight, Graph &g,
                           Partitioner &partitioner) {
-
   // auto vertex_index_map = get(boost::vertex_index, g);
   auto weights_map = get(boost::edge_weight, g);
 
@@ -74,7 +75,7 @@ add_edge_or_update_weigth(const vertex_id from, const vertex_id to,
   // Loop
   if (from == to) {
     Edge ed;
-    return {ed, false};
+    return {ed, INVALID};
   }
   auto v_to = partitioner.m_id_to_vertex.find(to);
   if (v_to == std::end(partitioner.m_id_to_vertex)) {
@@ -87,13 +88,13 @@ add_edge_or_update_weigth(const vertex_id from, const vertex_id to,
 
   // Update edge weight
   Edge edge;
-  bool edge_found;
+  bool edge_found = false;
   tie(edge, edge_found) = boost::edge(fr_desc, to_desc, g);
   if (edge_found) {
     auto current_weight = get(weights_map, edge);
     put(weights_map, edge, current_weight + weight);
   } else {
-    tie(edge, edge_found) = std::move(boost::add_edge(fr_desc, to_desc, g));
+    tie(edge, std::ignore) = std::move(boost::add_edge(fr_desc, to_desc, g));
     put(weights_map, edge, weight);
   }
   // Update vertex weight
@@ -101,7 +102,7 @@ add_edge_or_update_weigth(const vertex_id from, const vertex_id to,
   ++g[boost::target(edge, g)].m_vertex_weight;
 
   partitioner.added_edge(from, to);
-  return {edge, edge_found};
+  return {edge, edge_found ? FOUND : NOT_FOUND};
 }
 
 template <typename map_type>
@@ -130,7 +131,8 @@ void LOG_POINT(std::ofstream &stats_file, const Graph &graph,
                uint32_t cross_partition_tx_access,
                uint32_t same_partition_tx_access, uint32_t new_timestamp,
                const std::vector<uint32_t> &txs_per_partition,
-               const std::unique_ptr<Partitioner> &partitioner);
+               const std::unique_ptr<Partitioner> &partitioner,
+               uint32_t edges_cut);
 
 // const std::unordered_set<uint32_t> pre_compiled_contracts = {
 //     17596,  // 1 ecrecover

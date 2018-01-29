@@ -14,18 +14,17 @@
 
 using std::string;
 using std::set;
-using std::pair;
 using std::cout;
 using std::endl;
 using std::vector;
 
 int main(int argc, char **argv) {
   bool DEBUG = false;
-  Graph g;
+  Graph graph;
   Config config = Config(argv[2]);
   cout << config;
-  auto partitioner = GraphHelpers::get_partitioner(g, config);
-  Statistics statistics(g, *partitioner, config);
+  auto partitioner = GraphHelpers::get_partitioner(graph, config);
+  Statistics statistics(graph, *partitioner, config);
 
   std::ifstream calls_file(argv[1]);
   std::ofstream stats_file("/tmp/edge_cut_evolution_partitions_" +
@@ -50,7 +49,7 @@ int main(int argc, char **argv) {
   lineN = timestamp_log = 0;
 
   set<uint32_t> involved_vertices;
-  vector<pair<uint32_t, uint32_t>> involved_edges;
+  vector<std::tuple<Edge, Utils::EDGE_PROP>> involved_edges;
   vector<uint32_t> delete_vertices;
 
   // Genesis processing
@@ -60,7 +59,7 @@ int main(int argc, char **argv) {
   for (int tx = 0; tx < n_transactions; ++tx) {
     calls_file >> to_vertex >> tx_value;
     involved_vertices.insert(to_vertex);
-    Utils::add_edge_or_update_weigth(0u, to_vertex, 1, g, *partitioner);
+    Utils::add_edge_or_update_weigth(0u, to_vertex, 1, graph, *partitioner);
   }
   partitioner->assign_partition(involved_vertices, config.N_PARTITIONS);
   // End Genesis processing
@@ -92,17 +91,17 @@ int main(int argc, char **argv) {
       uint32_t edges_cut;
 
       vector<uint32_t> balance;
-      tie(edges_cut, balance) = partitioner->calculate_edge_cut_balances(g);
+      tie(edges_cut, balance) = partitioner->calculate_edge_cut_balances(graph);
       statistics.define_edges_cut(edges_cut);
-      Utils::LOG_REPARTITION(stats_file, g, new_timestamp,
+      Utils::LOG_REPARTITION(stats_file, graph, new_timestamp,
                              movements_to_repartition, edges_cut, balance);
     }
 
     assert(new_timestamp >= timestamp_log);
     if (new_timestamp - timestamp_log > TIME_GAP_LOG) {
-      Utils::LOG_POINT(stats_file, g, cross_partition_tx_access,
+      Utils::LOG_POINT(stats_file, graph, cross_partition_tx_access,
                        same_partition_tx_access, new_timestamp,
-                       txs_per_partition, partitioner);
+                       txs_per_partition, partitioner, statistics.m_edges_cut);
 
       same_partition_tx_access = cross_partition_tx_access = 0;
       std::fill(txs_per_partition.begin(), txs_per_partition.end(), 0);
@@ -141,9 +140,8 @@ int main(int argc, char **argv) {
             // To: Funds moved there
             delete_vertices.push_back(from_vertex);
           }
-          Utils::add_edge_or_update_weigth(from_vertex, to_vertex, weight, g,
-                                           *partitioner);
-          involved_edges.push_back({from_vertex, to_vertex});
+          involved_edges.push_back(Utils::add_edge_or_update_weigth(
+              from_vertex, to_vertex, weight, graph, *partitioner));
         }
       }
       try {
@@ -153,10 +151,15 @@ int main(int argc, char **argv) {
         cout << e.what() << endl;
         return 0;
       }
-      std::unordered_set<uint32_t> partitions_involved;
+      std::unordered_set<uint32_t> partitions_involved(config.N_PARTITIONS);
       for (const auto &edge : involved_edges) {
-        auto fr_p = partitioner->m_partitioning[edge.first];
-        auto to_p = partitioner->m_partitioning[edge.second];
+        if (std::get<1>(edge) == Utils::INVALID)
+          continue;
+        auto from =
+            Utils::get_id(boost::source(std::get<0>(edge), graph), graph);
+        auto to = Utils::get_id(boost::target(std::get<0>(edge), graph), graph);
+        auto fr_p = partitioner->m_partitioning[from];
+        auto to_p = partitioner->m_partitioning[to];
         partitions_involved.insert(fr_p);
         partitions_involved.insert(to_p);
       }

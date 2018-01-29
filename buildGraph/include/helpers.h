@@ -1,8 +1,8 @@
 #pragma once
 #include <partitioner.h>
 
-#include <METIS_partitioning.h>
 #include <HMETIS_partitioning.h>
+#include <METIS_partitioning.h>
 #include <config.h>
 #include <fb_partitioning.h>
 #include <file_partitioning.h>
@@ -12,8 +12,7 @@
 #include <part_graph_partitioning.h>
 
 namespace GraphHelpers {
-std::unique_ptr<Partitioner> get_partitioner(Graph &graph,
-                                             Config &config) {
+std::unique_ptr<Partitioner> get_partitioner(Graph &graph, Config &config) {
   std::unique_ptr<Partitioner> partitioner;
   switch (config.PARTITIONING_MODE) {
   case Config::HASH_PARTITIONER:
