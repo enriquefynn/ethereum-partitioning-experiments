@@ -45,7 +45,7 @@ METIS_partitioner::partition(const Graph &graph,
 
   idx_t nvtxs = boost::num_vertices(graph);
   if (!nvtxs)
-    assert(false);
+    return 0;
   idx_t ncon = 1;
   idx_t *xadj = (idx_t *)malloc((nvtxs + 1) * sizeof(idx_t));
   idx_t *adjncy = (idx_t *)malloc(2 * boost::num_edges(graph) * sizeof(idx_t));

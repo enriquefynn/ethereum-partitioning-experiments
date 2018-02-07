@@ -12,6 +12,7 @@
 typedef std::unordered_map<uint32_t, uint32_t> map_type;
 
 using namespace std;
+using P = Utils::TUPLE_PROP;
 class GraphTest : public ::testing::Test {
 public:
   GraphTest() {}
@@ -65,10 +66,11 @@ TEST_F(GraphTest, noMultiEdge) {
 
 TEST_F(GraphTest, noLoop) {
   Utils::add_edge_or_update_weigth(1, 1, 1, *g, *partitioner);
-  Utils::add_edge_or_update_weigth(1, 1, 1, *g, *partitioner);
-  Utils::add_edge_or_update_weigth(1, 1, 1, *g, *partitioner);
+  Utils::add_edge_or_update_weigth(2, 2, 1, *g, *partitioner);
+  Utils::add_edge_or_update_weigth(2, 2, 1, *g, *partitioner);
+  Utils::add_edge_or_update_weigth(3, 3, 1, *g, *partitioner);
 
-  ASSERT_EQ(1, boost::num_vertices(*g));
+  ASSERT_EQ(3, boost::num_vertices(*g));
   ASSERT_EQ(0, boost::num_edges(*g));
 }
 
@@ -80,7 +82,7 @@ TEST_F(GraphTest, haveEdgeWeight) {
   Utils::add_edge_or_update_weigth(1, 10, 1, *g, *partitioner);
 
   auto weights_map = get(boost::edge_weight, *g);
-  auto weight = get(weights_map, std::get<0>(added_edge));
+  auto weight = get(weights_map, std::get<P::EDGE>(added_edge));
 
   ASSERT_EQ(12, weight);
 }
@@ -92,26 +94,39 @@ TEST_F(GraphTest, haveVertexWeight) {
   Utils::add_edge_or_update_weigth(1, 10, 1, *g, *partitioner);
   Utils::add_edge_or_update_weigth(1, 10, 1, *g, *partitioner);
 
-  ASSERT_EQ((*g)[boost::target(std::get<0>(added_edge), *g)].m_vertex_weight,
+  ASSERT_EQ((*g)[boost::target(std::get<P::EDGE>(added_edge), *g)].m_vertex_weight,
             3);
-  ASSERT_EQ((*g)[boost::source(std::get<0>(added_edge), *g)].m_vertex_weight,
+  ASSERT_EQ((*g)[boost::source(std::get<P::EDGE>(added_edge), *g)].m_vertex_weight,
             3);
 }
 
 TEST_F(GraphTest, computesCorrectCC) {
   config->GRAPH_CC_PATH = "/tmp/cc.txt";
   auto stats = Statistics(*g, *partitioner, *config);
+  partitioner->assign_partition({0, 1, 2, 3, 4, 5, 6}, 2);
 
-  Edge edge;
-  Utils::add_edge_or_update_weigth(0, 1, 1, *g, *partitioner);
-  ASSERT_EQ(stats.m_number_of_cc, 1);
-  Utils::add_edge_or_update_weigth(1, 2, 1, *g, *partitioner);
-  Utils::add_edge_or_update_weigth(3, 4, 1, *g, *partitioner);
-  ASSERT_EQ(stats.m_number_of_cc, 2);
-  Utils::add_edge_or_update_weigth(5, 6, 1, *g, *partitioner);
-  ASSERT_EQ(stats.m_number_of_cc, 3);
-  Utils::add_edge_or_update_weigth(0, 5, 1, *g, *partitioner);
-  ASSERT_EQ(stats.m_number_of_cc, 2);
+  auto edge = Utils::add_edge_or_update_weigth(0, 1, 1, *g, *partitioner);
+  stats.add_edges({edge});
+  ASSERT_EQ(stats.m_cc_size.size(), 1);
+  ASSERT_EQ(stats.m_cc_size[1], 2);
+  
+  edge = Utils::add_edge_or_update_weigth(1, 2, 1, *g, *partitioner);
+  stats.add_edges({edge});
+  edge = Utils::add_edge_or_update_weigth(3, 4, 1, *g, *partitioner);
+  stats.add_edges({edge});
+  ASSERT_EQ(stats.m_cc_size.size(), 2);
+  ASSERT_EQ(stats.m_cc_size[1], 3);
+  ASSERT_EQ(stats.m_cc_size[4], 2);
+
+  edge = Utils::add_edge_or_update_weigth(5, 6, 1, *g, *partitioner);
+  stats.add_edges({edge});
+  ASSERT_EQ(stats.m_cc_size.size(), 3);
+  ASSERT_EQ(stats.m_cc_size[6], 2);
+
+  edge = Utils::add_edge_or_update_weigth(0, 5, 1, *g, *partitioner);
+  stats.add_edges({edge});
+  ASSERT_EQ(stats.m_cc_size.size(), 2);
+  ASSERT_EQ(stats.m_cc_size[6], 5);
 }
 
 TEST_F(GraphTest, comutesCorrectEdgeCut) {

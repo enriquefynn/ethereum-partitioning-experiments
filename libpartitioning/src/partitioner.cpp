@@ -4,10 +4,6 @@
 
 void Partitioner::assign_partition(const std::set<uint32_t> &vertex_list,
                                    int32_t nparts) {
-  // std::cout << "Involved vertices: ";
-  // for (const auto &it : vertex_list)
-  //   std::cout << it << ' ';
-  // std::cout << std::endl;
   std::vector<int32_t> best_partitions(nparts, 0);
   auto needs_partitioning = vertex_list.end();
   for (auto vertex = vertex_list.begin(); vertex != vertex_list.end();

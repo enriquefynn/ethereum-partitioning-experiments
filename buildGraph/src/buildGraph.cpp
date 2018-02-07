@@ -17,6 +17,7 @@ using std::set;
 using std::cout;
 using std::endl;
 using std::vector;
+using P = Utils::TUPLE_PROP;
 
 int main(int argc, char **argv) {
   bool DEBUG = false;
@@ -59,7 +60,7 @@ int main(int argc, char **argv) {
   for (int tx = 0; tx < n_transactions; ++tx) {
     calls_file >> to_vertex >> tx_value;
     involved_vertices.insert(to_vertex);
-    Utils::add_edge_or_update_weigth(0u, to_vertex, 1, graph, *partitioner);
+    Utils::add_edge_or_update_weigth(to_vertex, to_vertex, 1, graph, *partitioner);
   }
   partitioner->assign_partition(involved_vertices, config.N_PARTITIONS);
   // End Genesis processing
@@ -153,11 +154,12 @@ int main(int argc, char **argv) {
       }
       std::unordered_set<uint32_t> partitions_involved(config.N_PARTITIONS);
       for (const auto &edge : involved_edges) {
-        if (std::get<1>(edge) == Utils::INVALID)
+        if (std::get<P::PROP>(edge) == Utils::INVALID)
           continue;
         auto from =
-            Utils::get_id(boost::source(std::get<0>(edge), graph), graph);
-        auto to = Utils::get_id(boost::target(std::get<0>(edge), graph), graph);
+            Utils::get_id(boost::source(std::get<P::EDGE>(edge), graph), graph);
+        auto to =
+            Utils::get_id(boost::target(std::get<P::EDGE>(edge), graph), graph);
         auto fr_p = partitioner->m_partitioning[from];
         auto to_p = partitioner->m_partitioning[to];
         partitions_involved.insert(fr_p);

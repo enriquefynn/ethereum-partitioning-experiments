@@ -9,6 +9,7 @@
 #include <partitioner.h>
 
 namespace Utils {
+enum TUPLE_PROP { EDGE, PROP };
 enum EDGE_PROP { FOUND, NOT_FOUND, INVALID };
 
 template <typename map_type>
@@ -29,10 +30,6 @@ void assign_hash_partition(map_type &partitioning,
   for (auto vertex = needs_partitioning; vertex != vertex_list.end();
        ++vertex) {
     best_partition = (*vertex % nparts);
-    // if (*vertex != partitioning.size())
-    //   std::cout << *vertex << ' ' << partitioning.size() << std::endl;
-    // assert(*vertex == partitioning.size());
-    // Cannot find good partition to put
     partitioning[*vertex] = best_partition;
     ++balance[best_partition];
   }
