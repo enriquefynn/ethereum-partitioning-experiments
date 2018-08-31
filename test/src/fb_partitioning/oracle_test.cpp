@@ -25,8 +25,8 @@ protected:
         std::unique_ptr<FB_partitioner>(new FB_partitioner(*g, *config));
     stats =
         std::unique_ptr<Statistics>(new Statistics(*g, *partitioner, *config));
-
-    std::ifstream test_graph("./test/src/fb_partitioning/test_graph.txt",
+    // TODO: Better handle that config file
+    std::ifstream test_graph("../test/src/fb_partitioning/test_graph.txt",
                              std::ifstream::in);
     uint32_t n_vtx, n_edges, fr, to;
     test_graph >> n_edges;
