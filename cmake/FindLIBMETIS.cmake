@@ -11,7 +11,7 @@ find_path(LIBMETIS_INCLUDE_DIR metis.h
     HINTS "${LIBMETIS_ROOT}/include")
 
 find_library(LIBMETIS_LIBRARY
-   NAMES METIS
+   NAMES metis
    HINTS "${LIBMETIS_ROOT}/lib")
 
 set(LIBMETIS_LIBRARIES ${LIBMETIS_LIBRARY})
