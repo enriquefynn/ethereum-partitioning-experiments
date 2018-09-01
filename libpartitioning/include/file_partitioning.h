@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
+#include <unordered_set>
 #include <vector>
 
 class File_partitioner : public Partitioner {

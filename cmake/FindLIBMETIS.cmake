@@ -1,9 +1,9 @@
-# - Find LIBEVENT
-# Find the native LibEvent includes and library
+# - Find libmetis
+# Find the native libmetis includes and library
 #
-# LIBEVENT_INCLUDES - where to find METIS.h
+# LIBMETIS_INCLUDES - where to find METIS.h
 # LIBMETIS_LIBRARIES - List of libraries when using LIBMETIS.
-# LIBMETIS_FOUND - True if LibEvent found.
+# LIBMETIS_FOUND - True if libmetis found.
 
 set(LIBMETIS_ROOT "" CACHE STRING "LIBMETIS root directory")
 
