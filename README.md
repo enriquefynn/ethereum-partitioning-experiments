@@ -11,7 +11,7 @@ cd build
 cmake ..
 ```
 
-If you installed metis in other location use `cmake -DMETISROOTDIR=<location> ..`
+If you cmake cannot find METIS, or you installed it in another location do `cmake -DMETISROOTDIR=<location> ..`
 
 
 ## Testing
