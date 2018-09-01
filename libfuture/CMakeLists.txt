@@ -3,6 +3,7 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_SOURCE_DIR}/libpartitioning/include
   ${CMAKE_SOURCE_DIR}/libcommon/include
   ${CMAKE_SOURCE_DIR}/libutils/include
+  ${LIBMETIS_INCLUDE_DIRS}
   )
 
 SET(SRCS

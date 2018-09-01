@@ -5,13 +5,13 @@
 # LIBMETIS_LIBRARIES - List of libraries when using LIBMETIS.
 # LIBMETIS_FOUND - True if libmetis found.
 
-set(LIBMETIS_ROOT "" CACHE STRING "LIBMETIS root directory")
+set(LIBMETIS_ROOT "" CACHE STRING "libmetis root directory")
 
 find_path(LIBMETIS_INCLUDE_DIR metis.h 
     HINTS "${LIBMETIS_ROOT}/include")
 
 find_library(LIBMETIS_LIBRARY
-   NAMES metis
+   metis
    HINTS "${LIBMETIS_ROOT}/lib")
 
 set(LIBMETIS_LIBRARIES ${LIBMETIS_LIBRARY})
