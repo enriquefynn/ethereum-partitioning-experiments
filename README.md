@@ -25,7 +25,8 @@ cd ./build
 Download [calls.tar.gz](https://dslab.inf.usi.ch/ethereum_trace/downloads/calls.tar.gz) from https://dslab.inf.usi.ch/ethereum_trace/
 
 Save and uncompress the files.
-run the test, inside ./build:
+
+To run the test, go inside ./build:
 ```
 ./bin/buildGraph <calls.txt> <config.txt>
 ```
