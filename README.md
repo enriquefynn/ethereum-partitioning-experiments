@@ -21,6 +21,11 @@ cd ./build
 ```
 
 ## Running
+
+Download [calls.tar.gz](https://dslab.inf.usi.ch/ethereum_trace/downloads/calls.tar.gz) and [id_mapping.txt](https://dslab.inf.usi.ch/ethereum_trace/downloads/id_mapping.tar.gz) from https://dslab.inf.usi.ch/ethereum_trace/
+
+Save and uncompress the files.
+run the test, inside ./build:
 ```
-TODO
+./bin/buildGraph <calls.txt> <config.txt>
 ```
