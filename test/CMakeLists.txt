@@ -3,6 +3,7 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_SOURCE_DIR}/libutils/include
   ${CMAKE_SOURCE_DIR}/libpartitioning/include
   ${CMAKE_SOURCE_DIR}/libfuture/include
+  ${LIBMETIS_INCLUDE_DIRS}
   )
 
 add_executable(
