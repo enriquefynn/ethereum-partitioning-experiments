@@ -30,3 +30,15 @@ To run the test, go inside ./build:
 ```
 ./bin/buildGraph <calls.txt> <config.txt>
 ```
+results are saved in `/tmp/edge_cut_evolution_partitions_<params>`
+
+## Observing results
+
+Feed the experiment to one of the scripts in `./scripts` folder, for example:
+```
+SAVEGRAPH=true ./plotEdgeCutEvolution.py /tmp/edge_cut_evolution_<params>.txt
+```
+A pdf with the same name as the experiment will be created, or omit the `SAVEGRAPH` variable for
+a python visualization.
+
+
