@@ -1,10 +1,11 @@
 # ethereum-partitioning-experiments
-
-Download and install [Boost](https://www.boost.org/) and [Metis](http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-5.1.0.tar.gz) 
-
-Make sure you have boost with graph library support (BGL)
+Tools Used in ["Challenges and pitfalls of partitioning blockchains"](https://arxiv.org/abs/1804.07356)
 
 ## Building
+Download and install [Boost](https://www.boost.org/) and [Metis](http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-5.1.0.tar.gz) 
+
+Make sure you have boost with Graph Library Support (BGL)
+
 ```
 mkdir ./build
 cd build
@@ -40,5 +41,4 @@ SAVEGRAPH=true ./plotEdgeCutEvolution.py /tmp/edge_cut_evolution_<params>.txt
 ```
 A pdf with the same name as the experiment will be created, or omit the `SAVEGRAPH` variable for
 a python visualization.
-
 
