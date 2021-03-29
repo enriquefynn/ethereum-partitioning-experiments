@@ -65,4 +65,5 @@ public:
 
   virtual void added_edge(uint32_t from, uint32_t to) {}
   virtual void terminate() {}
+  virtual ~Partitioner() {}
 };

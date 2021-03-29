@@ -13,40 +13,25 @@
 
 namespace GraphHelpers {
 std::unique_ptr<Partitioner> get_partitioner(Graph &graph, Config &config) {
-  std::unique_ptr<Partitioner> partitioner;
   switch (config.PARTITIONING_MODE) {
   case Config::HASH_PARTITIONER:
-    partitioner =
-        std::unique_ptr<Partitioner>(new Hash_partitioner(graph, config));
-    break;
+    return std::unique_ptr<Partitioner>(new Hash_partitioner(graph, config));
   case Config::METIS_PARTITIONER:
-    partitioner =
-        std::unique_ptr<Partitioner>(new METIS_partitioner(graph, config));
-    break;
+    return std::unique_ptr<Partitioner>(new METIS_partitioner(graph, config));
   case Config::HMETIS_PARTITIONER:
-    partitioner =
-        std::unique_ptr<Partitioner>(new HMETIS_partitioner(graph, config));
-    break;
+    return std::unique_ptr<Partitioner>(new HMETIS_partitioner(graph, config));
   case Config::FACEBOOK_PARTITIONER:
-    partitioner =
-        std::unique_ptr<Partitioner>(new FB_partitioner(graph, config));
-    break;
+    return std::unique_ptr<Partitioner>(new FB_partitioner(graph, config));
   case Config::FILE_PARTITIONER:
-    partitioner =
-        std::unique_ptr<Partitioner>(new File_partitioner(graph, config));
-    break;
+    return std::unique_ptr<Partitioner>(new File_partitioner(graph, config));
   case Config::FUTURE_PARTITIONER:
-    partitioner =
-        std::unique_ptr<Partitioner>(new Future_partitioner(graph, config));
-    break;
+    return std::unique_ptr<Partitioner>(new Future_partitioner(graph, config));
   case Config::PART_GRAPH_PARTITIONER:
-    partitioner =
-        std::unique_ptr<Partitioner>(new Part_graph_partitioner(graph, config));
-    break;
+    return std::unique_ptr<Partitioner>(
+        new Part_graph_partitioner(graph, config));
   default:
     assert(false);
     break;
   }
-  return partitioner;
 }
 } // namespace GraphHelpers

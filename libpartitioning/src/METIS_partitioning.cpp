@@ -18,11 +18,9 @@ METIS_partitioner::METIS_partitioner(Graph &graph, Config &config)
   // METIS_OPTIONS[METIS_OPTION_DBGLVL] = 2;
 }
 
-uint32_t
-METIS_partitioner::partition(const Graph &graph,
-                             const std::map<uint32_t, Vertex> &id_to_vertex,
-                             std::unordered_map<uint32_t, uint32_t> &partitioning,
-                             idx_t nparts) {
+uint32_t METIS_partitioner::partition(
+    const Graph &graph, const std::map<uint32_t, Vertex> &id_to_vertex,
+    std::unordered_map<uint32_t, uint32_t> &partitioning, idx_t nparts) {
   LOG_INFO("Begin partitioning");
   auto weight_map = boost::get(boost::edge_weight, graph);
 
@@ -119,7 +117,7 @@ METIS_partitioner::partition(const Graph &graph,
             .count();
   LOG_INFO("Time to run METIS: %lld", now);
   before = std::chrono::high_resolution_clock::now();
-  
+
   auto old_partitioning = std::move(partitioning);
   assert(partitioning.size() == 0);
   assert(old_partitioning.size() == nvtxs);
@@ -133,7 +131,8 @@ METIS_partitioner::partition(const Graph &graph,
   free(vwgt);
   free(part);
 
-  return calculate_movements_repartition(old_partitioning, partitioning, nparts);
+  return calculate_movements_repartition(old_partitioning, partitioning,
+                                         nparts);
 }
 std::string METIS_partitioner::get_name() {
 

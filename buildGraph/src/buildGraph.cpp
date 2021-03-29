@@ -12,10 +12,10 @@
 #include <statistics.h>
 #include <utils.h>
 
-using std::string;
-using std::set;
 using std::cout;
 using std::endl;
+using std::set;
+using std::string;
 using std::vector;
 using P = Utils::TUPLE_PROP;
 
@@ -56,11 +56,12 @@ int main(int argc, char **argv) {
   // Genesis processing
   uint32_t n_transactions;
   calls_file >> header >> n_transactions;
-  involved_vertices.insert(0);
+  //   involved_vertices.insert(0);
   for (int tx = 0; tx < n_transactions; ++tx) {
     calls_file >> to_vertex >> tx_value;
     involved_vertices.insert(to_vertex);
-    Utils::add_edge_or_update_weigth(to_vertex, to_vertex, 1, graph, *partitioner);
+    Utils::add_edge_or_update_weigth(to_vertex, to_vertex, 1, graph,
+                                     *partitioner);
   }
   partitioner->assign_partition(involved_vertices, config.N_PARTITIONS);
   // End Genesis processing
